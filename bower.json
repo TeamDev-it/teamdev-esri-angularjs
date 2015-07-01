@@ -1,0 +1,28 @@
+{
+  "name": "teamdev.esri.angularjs",
+  "version": "0.40.0",
+  "authors": [
+    "TeamDev <info@teamdev.it>", 
+    "Paolo Possanzini<paolo@teamdev.it>",
+    "Enrico Sodacci<e.sodacci@teamdev.it>"
+  ],
+  "description": "AngularJS Module for ESRI Maps",
+  "main": "js/teamdev.esri.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "angularjs",
+    "esri",
+    "maps"
+  ],
+  "license": "MIT",
+  "homepage": "www.teamdev.it",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
