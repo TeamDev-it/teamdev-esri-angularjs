@@ -18,25 +18,25 @@ m.factory("esriRegistry", function ($window) {
 });
 
 m.factory("esriQuery", function ($q, esriRegistry) {
-  function setParameter(destination, source, parameter)
-    {
-      if(typeof(source && source[parameter]) !== "undefined" && source[parameter]) destination[parameter] = source[parameter];
-    }
-  
+  function setParameter(destination, source, parameter) {
+    if (typeof (source && source[parameter]) !== "undefined" && source[parameter]) destination[parameter] = source[parameter];
+  }
+
   return {
-    featuresNearPoint: function(layerid, point, tollerance){
-       esriRegistry.get(layerid).features;
+    featuresNearPoint: function (layerid, point, tollerance) {
+      esriRegistry.get(layerid).features;
     },
-    queryTask: function(url, fields, where, options){
+    queryTask: function (url, fields, where, options) {
       var _q = $q.defer();
-      
+
       this.create(fields, where, function (query) {
-        require(["esri/tasks/QueryTask"], function(QueryTask){
+        require(["esri/tasks/QueryTask"], function (QueryTask) {
           var qt = new QueryTask(url);
-          qt.execute(query, function(result){ _q.resolve(result); });
-      });}, options);
+          qt.execute(query, function (result) { _q.resolve(result); });
+        });
+      }, options);
       return _q.promise;
-    }, 
+    },
     queryFeatures: function (layerid, fields, where, options) {
       var _q = $q.defer();
 
@@ -59,15 +59,17 @@ m.factory("esriQuery", function ($q, esriRegistry) {
       var _q = $q.defer();
       this.create(fields, where, function (query) {
         if (layerid instanceof Object) layerid.selectFeatures(query).then(function (result) { _q.resolve(result); });
-        else { var olayer = esriRegistry.get(layerid);
-               if(olayer) olayer.selectFeatures(query).then(function (result) { _q.resolve(result); });}
+        else {
+          var olayer = esriRegistry.get(layerid);
+          if (olayer) olayer.selectFeatures(query).then(function (result) { _q.resolve(result); });
+        }
       }, options);
       return _q.promise;
     },
-    identify: function(layeruri, where){
+    identify: function (layeruri, where) {
       var _q = $q.defer();
-      
-      require(["esri/tasks/IdentifyTask","esri/tasks/IdentifyParameters","dojo/on"], function(IdentifyTask, IdentifyParameters, on){
+
+      require(["esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "dojo/on"], function (IdentifyTask, IdentifyParameters, on) {
         var params = new IdentifyParameters();
         params.layerOption = IdentifyParameters.LAYER_OPTION_ALL;
         setParameter(params, where, "dpi");
@@ -85,9 +87,9 @@ m.factory("esriQuery", function ($q, esriRegistry) {
         setParameter(params, where, "timeExtent");
         setParameter(params, where, "tolerance");
         setParameter(params, where, "width");
-        
+
         var tsk = new IdentifyTask(layeruri);
-        tsk.execute(params, function(results){ _q.resolve(results); });
+        tsk.execute(params, function (results) { _q.resolve(results); });
       });
       return _q.promise;
     },
@@ -98,7 +100,7 @@ m.factory("esriQuery", function ($q, esriRegistry) {
       if (action)
         require(["esri/tasks/query"], function (Query) {
           var query = new Query();
-          
+
           setParameter(query, options, "returnGeometry");
           setParameter(query, options, "returnDistinctValues");
           setParameter(query, options, "distance");
@@ -111,20 +113,19 @@ m.factory("esriQuery", function ($q, esriRegistry) {
           if (angular.isString(where)) query.where = where;
           else if (angular.isObject(where))
             query.geometry = where;
-          
+
           action(query);
         });
     }
   };
 });
 
-
 m.directive("esriMap", function ($q, esriRegistry) {
   function link(scope, element, attrs) {
     function createMap() {
       var prepared = $q.defer();
       scope.isobjectreay = prepared.promise;
-      require(["esri/map", "esri/arcgis/utils", "dojo/domReady", "dojo/on", "dojo/touch"], function (Map, arcgisUtils, on, touch) {
+      require(["esri/map", "esri/arcgis/utils", "esri/IdentityManager", "dojo/on", "dojo/touch", "dojo/domReady"], function (Map, arcgisUtils, esriIm, on, touch) {
 
         var options = {
           basemap: "gray",
@@ -150,7 +151,11 @@ m.directive("esriMap", function ($q, esriRegistry) {
         if (scope.showLogo) options.logo = scope.showLogo;
         if (scope.showAttribution) options.showAttribution = scope.showAttribution;
 
-        
+
+        if (scope.credentials) {
+          esriIm.registerToken(scope.credentials);
+        }
+
 
         if (scope.webmapid) {
           arcgisUtils.createMap(scope.webmapid, scope.mapid, { mapOptions: options }).then(function (result) {
@@ -165,34 +170,31 @@ m.directive("esriMap", function ($q, esriRegistry) {
 
         prepared.promise.then(function () {
           esriRegistry.set(scope.mapid, scope.esri_map);
-          if(scope.esri_map.loaded)
-          {
-            ready.resolve();
-            if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);            
+          if (scope.esri_map.loaded) {
+            scope.esri_map.resize();
+            if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);
           }
-          else
-          {
+          else {
             scope.esri_map.on("load", function () {
-              ready.resolve();
+              scope.esri_map.resize();
               if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);
             });
           }
           scope.esri_map.on("click", function (p) {
             if (scope.onClick())
               scope.onClick()(p);
-              
-            if(scope.onGraphicsClick() || scope.isOnMobileDevice)
-            {
-              require(["esri/geometry/Extent"], function(Extent) { 
+
+            if (scope.onGraphicsClick() || scope.isOnMobileDevice) {
+              require(["esri/geometry/Extent"], function (Extent) {
                 var pixelWidth = scope.esri_map.extent.getWidth() / scope.esri_map.width;
                 var toleraceInMapCoords = scope.clickTolerance * pixelWidth;
-                var clickExtent = new Extent( p.mapPoint.x - toleraceInMapCoords, p.mapPoint.y - toleraceInMapCoords,
+                var clickExtent = new Extent(p.mapPoint.x - toleraceInMapCoords, p.mapPoint.y - toleraceInMapCoords,
                                               p.mapPoint.x + toleraceInMapCoords, p.mapPoint.y + toleraceInMapCoords,
-                                              scope.esri_map.extent.spatialReference );
+                                              scope.esri_map.extent.spatialReference);
                 var result_graphics = [];
-                scope.esri_map.graphics.graphics.forEach(function(g){
-                  if(clickExtent.contains(g)) result_graphics.push(g);
-                });                                         
+                scope.esri_map.graphics.graphics.forEach(function (g) {
+                  if (clickExtent.contains(g)) result_graphics.push(g);
+                });
                 scope.onGraphicsClick()(result_graphics);
               });
             }
@@ -247,10 +249,11 @@ m.directive("esriMap", function ($q, esriRegistry) {
       showInfoWindowOnClick: "@showInfoWindowOnClick",
       slider: "@slider",
       onMapReady: "&onMapReady",
-      onClick: "&onClick", 
-      onGraphicsClick: "&onGraphicsClick", 
-      clickTolerance: "=", 
-      isOnMobileDevice: "="
+      onClick: "&onClick",
+      onGraphicsClick: "&onGraphicsClick",
+      clickTolerance: "=",
+      isOnMobileDevice: "=",
+      credentials: "=",
     },
     compile: compiler,
     controller: function ($scope) {
@@ -263,7 +266,7 @@ m.directive("esriMap", function ($q, esriRegistry) {
         $scope.isobjectreay.then(function () {
           $scope.esri_map.removeLayer(l);
           if (l.id) esriRegistry.remove(l.id);
-	});
+        });
       };
       this.getMap = function (action) {
         if (action) $scope.isobjectreay.then(function () { action($scope.esri_map); });
@@ -291,42 +294,48 @@ m.directive("featureLayer", function ($q, esriRegistry) {
       outFields: "@",
       zoomToSelection: "@",
       mode: "@",
-      onReady: "&", 
-      showInfoWindowOnClick:"="
+      onReady: "&",
+      showInfoWindowOnClick: "="
     },
     link: {
       pre: function (scope, element, attrs, esriMap) {
         var ready = $q.defer();
         scope.isobjectreay = ready.promise;
-        require(["esri/layers/FeatureLayer", "esri/graphicsUtils"], function (FeatureLayer, GraphicsUtils) {
-          
+        require(["esri/layers/FeatureLayer", "esri/graphicsUtils", "esri/IdentityManager"], function (FeatureLayer, GraphicsUtils, esriIm) {
+
+
+          console.log(esriIm);
           scope.this_layer = new FeatureLayer(attrs.url, evaluateOptions(scope));
           esriMap.addLayer(scope.this_layer);
-          
-          if (scope.id)
-          {
+
+          if (scope.id) {
             scope.this_layer.id = scope.id;
             esriRegistry.set(scope.id, scope.this_layer);
           }
-          ready.resolve();
-          
-          if (scope.onReady()) scope.onReady()(scope.this_layer);
-                
-          scope.this_layer.on("click", function (r) {
-            if (!scope.$$phase && !scope.$root.$$phase) scope.$apply(function () {
-              if (scope.onClick()) scope.onClick()(r);
-            });
-            
-            if(scope.showInfoWindowOnClick)
-            {
-              esriMap.getMap(function(rr){ 
-                rr.infoWindow.hide();
-                rr.infoWindow.clearFeatures();
-                rr.infoWindow.setFeatures([r.graphic]);
-                rr.infoWindow.show(r.mapPoint);
-              });
-            }
+
+
+
+          scope.this_layer.on("load", function (r) {
+            ready.resolve();
+            if (scope.onReady())
+              scope.onReady()(scope.this_layer);
           });
+
+          if (scope.onClick() || scope.showInfoWindowOnClick)
+            scope.this_layer.on("click", function (r) {
+              if (!scope.$$phase && !scope.$root.$$phase) scope.$apply(function () {
+                if (scope.onClick()) scope.onClick()(r);
+              });
+
+              if (scope.showInfoWindowOnClick) {
+                esriMap.getMap(function (rr) {
+                  rr.infoWindow.hide();
+                  rr.infoWindow.clearFeatures();
+                  rr.infoWindow.setFeatures([r.graphic]);
+                  rr.infoWindow.show(r.mapPoint);
+                });
+              }
+            });
           function evaluateOptions(scope) {
             var options = {};
 
@@ -355,8 +364,10 @@ m.directive("featureLayer", function ($q, esriRegistry) {
 
           scope.this_layer.on("selection-complete", function () {
             if (scope.zoomToSelection) {
-              var extent = GraphicsUtils.graphicsExtent(scope.this_layer.getSelectedFeatures());
-              esriMap.getMap(function (m) { m.setExtent(extent); });
+              scope.isobjectreay.then(function () {
+                var extent = GraphicsUtils.graphicsExtent(scope.this_layer.getSelectedFeatures());
+                esriMap.getMap(function (m) { m.setExtent(extent); });
+              });
             }
           });
 
@@ -366,6 +377,7 @@ m.directive("featureLayer", function ($q, esriRegistry) {
             scope.this_layer.setVisibility(n);
           }
         });
+
         scope.$on("$destroy", function () {
           scope.isobjectreay.then(function () {
             if (scope.id) esriRegistry.remove(scope.id);
@@ -392,9 +404,8 @@ m.directive("featureLayer", function ($q, esriRegistry) {
         if (action)
           $scope.isobjectreay.then(function () { action($scope.this_layer) });
       };
-      this.setRenderer = function(renderer)
-      {
-        $scope.isobjectreay.then(function(){
+      this.setRenderer = function (renderer) {
+        $scope.isobjectreay.then(function () {
           $scope.this_layer.setRenderer(renderer);
         });
       };
@@ -426,15 +437,14 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
       pre: function (scope, element, attrs, esriMap) {
         var ready = $q.defer();
         scope.isobjectreay = ready.promise;
-        
+
         require(["esri/layers/GraphicsLayer"], function (GraphicsLayer) {
           scope.this_layer = new GraphicsLayer();
           esriMap.addLayer(scope.this_layer);
-          if (scope.id) 
-          {
+          if (scope.id) {
             scope.this_layer.id = scope.id;
             esriRegistry.set(scope.id, scope.this_layer);
-          }  
+          }
           ready.resolve();
 
           scope.this_layer.on("click", function (r) {
@@ -469,8 +479,9 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
           });
         });
       };
-      this.remove = function (g) { 
-        $scope.this_layer.remove(g); };
+      this.remove = function (g) {
+        $scope.this_layer.remove(g);
+      };
       this.setInfoWindow = function (t, c) {
         $scope.isobjectreay.then(function () {
           require(["esri/InfoTemplate"], function (InfoTemplate) {
@@ -521,49 +532,49 @@ m.directive("labelLayer", function ($q) {
   };
 });
 
-m.directive("polyLine", function($q){
+m.directive("polyLine", function ($q) {
 
-    return {
-      restrict:"E",
-      require: ["?^graphicsLayer", "?^featureLayer"],
-      scope: {
-          json: "="
-      }, 
-      link:  {
-        pre: function (scope, element, attrs, layers) {
-          var ready = $q.defer();
-          scope.isobjectreay = ready.promise;
-          var layer = layers[0] || layers[1];
-          require(["esri/geometry/Polyline", "esri/graphic"], function(Polyline, Graphic) {
-            
-            if(scope.json)
-              if(scope.json instanceof Object && scope.json.type === "polyline")
-                scope.geometry = scope.json;
-              else
-                scope.geometry = new Polyline(scope.json);
-            if (scope.symbol) {
-              scope.graphic = new Graphic(scope.geometry, scope.symbol);
-              layer.add(scope.graphic);
-            }
-            else {
-              scope.graphic = new Graphic(scope.geometry);
-              layer.add(scope.graphic);
-            }
-            ready.resolve();
-          });
-          
-          scope.$on("$destroy", function () { scope.isobjectreay.then(function () { layer.remove(scope.graphic); }); });
-        }
-      },
-      controller: function ($scope) {
-        this.setSymbol = function (val) {
-          $scope.isobjectreay.then(function () {
-            $scope.symbol = val;
-            $scope.graphic.setSymbol(val);
-          });
-        };
+  return {
+    restrict: "E",
+    require: ["?^graphicsLayer", "?^featureLayer"],
+    scope: {
+      json: "="
+    },
+    link: {
+      pre: function (scope, element, attrs, layers) {
+        var ready = $q.defer();
+        scope.isobjectreay = ready.promise;
+        var layer = layers[0] || layers[1];
+        require(["esri/geometry/Polyline", "esri/graphic"], function (Polyline, Graphic) {
+
+          if (scope.json)
+            if (scope.json instanceof Object && scope.json.type === "polyline")
+              scope.geometry = scope.json;
+            else
+              scope.geometry = new Polyline(scope.json);
+          if (scope.symbol) {
+            scope.graphic = new Graphic(scope.geometry, scope.symbol);
+            layer.add(scope.graphic);
+          }
+          else {
+            scope.graphic = new Graphic(scope.geometry);
+            layer.add(scope.graphic);
+          }
+          ready.resolve();
+        });
+
+        scope.$on("$destroy", function () { scope.isobjectreay.then(function () { layer.remove(scope.graphic); }); });
       }
-    };
+    },
+    controller: function ($scope) {
+      this.setSymbol = function (val) {
+        $scope.isobjectreay.then(function () {
+          $scope.symbol = val;
+          $scope.graphic.setSymbol(val);
+        });
+      };
+    }
+  };
 });
 
 m.directive("point", function ($q) {
@@ -575,7 +586,7 @@ m.directive("point", function ($q) {
       if (scope.json)
         scope.this_point = new Point(scope.json);
       else if (scope.spatialReference)
-        scope.this_point = new Point(scope.longitude, scope.latitude, new SpatialReference({wkid: scope.spatialReference}));
+        scope.this_point = new Point(scope.longitude, scope.latitude, new SpatialReference({ wkid: scope.spatialReference }));
       else
         scope.this_point = new Point(scope.longitude, scope.latitude);
 
@@ -583,7 +594,7 @@ m.directive("point", function ($q) {
         scope.this_point = webMercatorUtils.geographicToWebMercator(scope.this_point);
 
       scope.geometry = scope.this_point;
-      
+
       if (scope.symbol) {
         scope.graphic = new Graphic(scope.this_point, scope.symbol);
         layer.add(scope.graphic);
@@ -592,8 +603,8 @@ m.directive("point", function ($q) {
         scope.graphic = new Graphic(scope.this_point);
         layer.add(scope.graphic);
       }
-      
-      if(scope.extra) scope.graphic.extra = scope.extra;
+
+      if (scope.extra) scope.graphic.extra = scope.extra;
 
       ready.resolve();
     });
@@ -606,7 +617,7 @@ m.directive("point", function ($q) {
       spatialReference: "@",
       latitude: "=",
       longitude: "=",
-      json: "=", 
+      json: "=",
       extra: "=",
       geometry: "="
     },
@@ -673,8 +684,8 @@ m.directive("circle", function ($q) {
           scope.graphic = new Graphic(scope.this_point);
           layer.add(scope.graphic);
         }
-        if(scope.extra) scope.graphic.extra = scope.extra;
-            
+        if (scope.extra) scope.graphic.extra = scope.extra;
+
         scope.geometry = scope.this_point;
         ready.resolve();
       });
@@ -687,7 +698,7 @@ m.directive("circle", function ($q) {
       spatialReference: "@",
       latitude: "=",
       longitude: "=",
-      radius: "=", 
+      radius: "=",
       extra: "=",
       geometry: "="
     },
@@ -714,77 +725,69 @@ m.directive("infoWindow", function ($q) {
     restrict: "E",
     require: ["?^featureLayer", "?^graphicsLayer", "?^esriMap"],
     replace: true,
-    scope:{
+    scope: {
       contentFunc: "&",
       titleFunc: "&"
     },
     link: function (scope, element, attr, parents) {
       element.css("display", "none");
       var parent = parents[0] || parents[1] || parents[2];
-      
+
       var content = element[0].innerHTML;
       if (scope.contentFunc() instanceof Function) content = scope.contentFunc();
-      
+
       var title = attr.title;
       if (scope.titleFunc() instanceof Function) title = scope.titleFunc();
-      
+
       parent.setInfoWindow(title, content);
     }
   };
 });
 
-m.directive("uniqueValueRenderer", function($q){
+m.directive("uniqueValueRenderer", function ($q) {
   return {
-    restrict: "E", 
+    restrict: "E",
     require: ["^featureLayer"],
     link: {
-      pre: function(scope, element, attr, layer)
-      {
+      pre: function (scope, element, attr, layer) {
 
       },
-      post:  function(scope, element, attr, layer)
-      {
+      post: function (scope, element, attr, layer) {
         var ready = $q.defer();
         scope.isobjectreay = ready.promise;
-        require(["esri/renderers/UniqueValueRenderer"], function(Renderer){
+        require(["esri/renderers/UniqueValueRenderer"], function (Renderer) {
           scope.this_renderer = new Renderer(scope.default_symbol, attr.field);
-          for(var v in scope.infos)
+          for (var v in scope.infos)
             scope.this_renderer.addValue(scope.infos[v].value, scope.infos[v].symbol);
-            
+
           layer[0].setRenderer(scope.this_renderer);
           ready.resolve();
         });
       }
-    }, 
-    controller: function($scope)
-    {
+    },
+    controller: function ($scope) {
       $scope.infos = [];
-      this.setSymbol = function(s)
-      {
+      this.setSymbol = function (s) {
         $scope.default_symbol = s;
       };
-      this.setInfo = function(i, s)
-      {
-        $scope.infos.push({value : i, symbol: s});
+      this.setInfo = function (i, s) {
+        $scope.infos.push({ value: i, symbol: s });
       };
     }
   };
 });
 
-m.directive("valueInfo", function($q){
+m.directive("valueInfo", function ($q) {
   return {
-    restrict: "E", 
+    restrict: "E",
     require: ["^uniqueValueRenderer"],
-    controller: function($scope)
-    {
+    controller: function ($scope) {
       $scope.this_symbol = null;
-      this.setSymbol = function(s)
-      {
+      this.setSymbol = function (s) {
         $scope.this_symbol = s;
       };
-    }, 
-    link: function(scope, element, attr, renderer)
-    {
+    },
+    link: function (scope, element, attr, renderer) {
       renderer[0].setInfo(attr.value, scope.this_symbol);
     }
   };
@@ -793,8 +796,8 @@ m.directive("valueInfo", function($q){
 m.directive("pictureMarkerSymbol", function ($q) {
   return {
     restrict: "EA",
-    scope:{
-        symbolUrl: "@"
+    scope: {
+      symbolUrl: "@"
     },
     require: ["?point", "?^point", "?^graphicsLayer", "?^featureLayer", "?^valueInfo", "^?uniqueValueRenderer"],
     link: function (scope, element, attr, parents) {
@@ -805,13 +808,13 @@ m.directive("pictureMarkerSymbol", function ($q) {
         ready.resolve();
         scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5]);
         if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
-        
-         if (scope.symbolUrl) scope.$watch("symbolUrl", function (n, o) {
-            if (scope.symbolUrl && scope.ctrl && n !== o) {
-              scope.this_symbol = new PictureMarkerSymbol(scope.symbolUrl, attr.symbolWidth, attr.symbolHeight);
-              scope.ctrl.setSymbol(scope.this_symbol);
-            }
-         });
+
+        if (scope.symbolUrl) scope.$watch("symbolUrl", function (n, o) {
+          if (scope.symbolUrl && scope.ctrl && n !== o) {
+            scope.this_symbol = new PictureMarkerSymbol(scope.symbolUrl, attr.symbolWidth, attr.symbolHeight);
+            scope.ctrl.setSymbol(scope.this_symbol);
+          }
+        });
       });
     }
   };
@@ -828,35 +831,35 @@ m.directive("simpleLineSymbol", function ($q) {
       var ready = $q.defer();
       scope.isobjectreay = ready.promise;
       require(["esri/symbols/SimpleLineSymbol", "esri/Color"], function (SimpleLineSymbol, Color) {
-        
-         var style = SimpleLineSymbol.STYLE_SOLID;
-          var sym = attr.symbolStyle || attr.SimpleLineSymbol;
-          if (sym) {
-            switch (sym) {
-              case "STYLE_DASH": style = SimpleLineSymbol.STYLE_DASH; break;
-              case "STYLE_DASHDOT": style = SimpleLineSymbol.STYLE_DASHDOT; break;
-              case "STYLE_DASHDOTDOT": style = SimpleLineSymbol.STYLE_DASHDOTDOT; break;
-              case "STYLE_DOT": style = SimpleLineSymbol.STYLE_DOT; break;
-              case "STYLE_LONGDASHDOT": style = SimpleLineSymbol.STYLE_LONGDASHDOT; break;
-              case "STYLE_NULL": style = SimpleLineSymbol.STYLE_NULL; break;
-              case "STYLE_SOLID": style = SimpleLineSymbol.STYLE_SOLID; break;
-              case "STYLE_SHORTDASH": style = SimpleLineSymbol.STYLE_SHORTDASH; break;
-              case "STYLE_SHORTDASHDOT": style = SimpleLineSymbol.STYLE_SHORTDASHDOT; break;
-              case "STYLE_SHORTDASHDOTDOT": style = SimpleLineSymbol.STYLE_SHORTDASHDOTDOT; break;
-              case "STYLE_SHORTDOT": style = SimpleLineSymbol.STYLE_SHORTDOT; break;
-              default: style = sym;
-            }
+
+        var style = SimpleLineSymbol.STYLE_SOLID;
+        var sym = attr.symbolStyle || attr.SimpleLineSymbol;
+        if (sym) {
+          switch (sym) {
+            case "STYLE_DASH": style = SimpleLineSymbol.STYLE_DASH; break;
+            case "STYLE_DASHDOT": style = SimpleLineSymbol.STYLE_DASHDOT; break;
+            case "STYLE_DASHDOTDOT": style = SimpleLineSymbol.STYLE_DASHDOTDOT; break;
+            case "STYLE_DOT": style = SimpleLineSymbol.STYLE_DOT; break;
+            case "STYLE_LONGDASHDOT": style = SimpleLineSymbol.STYLE_LONGDASHDOT; break;
+            case "STYLE_NULL": style = SimpleLineSymbol.STYLE_NULL; break;
+            case "STYLE_SOLID": style = SimpleLineSymbol.STYLE_SOLID; break;
+            case "STYLE_SHORTDASH": style = SimpleLineSymbol.STYLE_SHORTDASH; break;
+            case "STYLE_SHORTDASHDOT": style = SimpleLineSymbol.STYLE_SHORTDASHDOT; break;
+            case "STYLE_SHORTDASHDOTDOT": style = SimpleLineSymbol.STYLE_SHORTDASHDOTDOT; break;
+            case "STYLE_SHORTDOT": style = SimpleLineSymbol.STYLE_SHORTDOT; break;
+            default: style = sym;
           }
-        
-        
+        }
+
+
         scope.this_symbol = new SimpleLineSymbol(
           style,
           Color.fromString(attr.symbolColor),
           attr.symbolWidth);
         ready.resolve();
-        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6]|| parents[7] || parents[8]);
+        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8]);
         if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
-              
+
         if (scope.symbolColor) scope.$watch("symbolColor", function (n, o) {
           if (scope.symbolColor && scope.ctrl && n !== o) {
             scope.this_symbol = scope.this_symbol = new SimpleLineSymbol(
