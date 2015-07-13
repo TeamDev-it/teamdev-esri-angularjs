@@ -17,3 +17,9 @@ Include Teamdev module
 Create your first map in HTML using directives. 
     
     <esri-map base-map="topo" map-id="map" zoom="9"></esri-map>
+    
+    
+    
+## modules.list file
+The module.list file contains a list of modules that teamdev.esri uses. 
+You can use module.list to create a custom build of esri javascript api using http://jso.arcgis.com/ service
