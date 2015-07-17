@@ -573,6 +573,7 @@ m.directive("polyLine", function ($q) {
         $scope.isObjectReady.then(function () {
           $scope.symbol = val;
           $scope.graphic.setSymbol(val);
+          $scope.graphic.draw();
         });
       };
     }
@@ -595,7 +596,7 @@ m.directive("point", function ($q) {
       if (scope.this_point.spatialReference.wkid == "4326")
         scope.this_point = webMercatorUtils.geographicToWebMercator(scope.this_point);
 
-      scope.geometry = scope.this_point;
+      if (scope.geometry) scope.geometry = scope.this_point;
 
       if (scope.symbol) {
         scope.graphic = new Graphic(scope.this_point, scope.symbol);
@@ -649,6 +650,7 @@ m.directive("point", function ($q) {
         $scope.symbol = val;
         $scope.isObjectReady.then(function () {
           $scope.graphic.setSymbol(val);
+          $scope.graphic.draw();
         });
       };
     }
@@ -688,7 +690,7 @@ m.directive("circle", function ($q) {
         }
         if (scope.extra) scope.graphic.extra = scope.extra;
 
-        scope.geometry = scope.this_point;
+        if (scope.geometry) scope.geometry = scope.this_point;
         ready.resolve();
       });
   }
@@ -708,7 +710,7 @@ m.directive("circle", function ($q) {
       pre: function (scope, element, attrs, layers) {
         var layer = layers[0] || layers[1];
         renderpoint(scope, layer);
-        scope.$on("$destroy", function () { scope.isObjectReadythen(function () { layer.remove(scope.graphic); }); });
+        scope.$on("$destroy", function () { scope.isObjectReady.then(function () { layer.remove(scope.graphic); }); });
       }
     },
     controller: function ($scope) {
@@ -716,6 +718,7 @@ m.directive("circle", function ($q) {
         $scope.isObjectReady.then(function () {
           $scope.symbol = val;
           $scope.graphic.setSymbol(val);
+          $scope.graphic.draw();
         });
       };
     }
@@ -825,7 +828,7 @@ m.directive("pictureMarkerSymbol", function ($q) {
 m.directive("simpleLineSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?^simpleFillSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^simpleFillSymbol", "?^simpleMarkerSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^graphicsLayer", "?^featureLayer"],
     scope: {
       symbolColor: "@"
     },
@@ -924,3 +927,118 @@ m.directive("simpleFillSymbol", function ($q) {
   };
 });
 
+
+m.directive("simpleTextSymbol", function ($q) {
+  return {
+    restrict: "EA",
+    require: ["?point", "?^point", "?^graphicsLayer", "?^featureLayer"],
+    scope: {
+      textColor: "@",
+      text: "@",
+      fontSize: "=",
+      fontStyle: "=",
+      fontVariant: "=",
+      fontWeight: "=",
+      fontFamily: "=",
+      xOffset: "=",
+      yOffset: "="
+    },
+    link: {
+      pre: function (scope, element, attr, parents) {
+        var ready = $q.defer();
+        scope.isObjectReady = ready.promise;
+        require(["esri/symbols/TextSymbol", "esri/Color", "esri/symbols/Font"], function (TextSymbol, Color, Font) {
+          
+          
+          var fontStyle = Font.STYLE_NORMAL;
+          if (scope.fontStyle) {
+            switch (scope.fontStyle) {
+              case "STYLE_ITALIC": fontStyle = Font.STYLE_ITALIC; break;
+              case "STYLE_OBLIQUE": fontStyle = Font.STYLE_OBLIQUE; break;
+            }
+          }
+          var fontVariant = Font.VARIANT_NORMAL;
+          if (scope.fontVariant) {
+            switch (scope.fontVariant) {
+              case "VARIANT_SMALLCAPS": style = Font.VARIANT_SMALLCAPS; break;
+            }
+          }
+          var fontWeight = Font.WEIGHT_NORMAL
+          if (scope.fontWeight) {
+            switch (scope.fontWeight) {
+              case "WEIGHT_BOLD": style = Font.WEIGHT_BOLD; break;
+              case "WEIGHT_BOLDER": style = Font.WEIGHT_BOLDER; break;
+              case "WEIGHT_LIGHTER": style = Font.WEIGHT_LIGHTER; break;
+            }
+          }
+          var font = new Font(scope.fontSize || "16", fontStyle, fontVariant, fontWeight, scope.fontFamily);
+          
+          scope.this_symbol = new TextSymbol(scope.text || attr.simpleTextSymbol || "", font);
+          if (scope.xOffset && scope.yOffset) scope.this_symbol.setOffset(scope.xOffset, scope.yOffset);
+          else if (scope.xOffset) scope.this_symbol.setOffset(scope.xOffset, 0);
+          else if (scope.yOffset) scope.this_symbol.setOffset(0, scope.yOffset);
+          
+          if (scope.textColor)
+            scope.this_symbol.setColor(Color.fromString(scope.textColor));
+          
+          
+          ready.resolve();
+          scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] );
+          if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
+          scope.$watch("text", function (n, o)
+          {
+            if (scope.text && scope.ctrl && n !== o) {
+              scope.this_symbol.setText(n);
+            }
+          });
+        });
+      }
+    }
+  };
+});
+
+
+m.directive("simpleMarkerSymbol", function ($q) {
+  return {
+    restrict: "EA",
+    require: ["?point", "?^point", "?^graphicsLayer", "?^featureLayer"],
+    scope: {
+      json: "=",
+      color: "@"
+    },
+    link: {
+      pre: function (scope, element, attr, parents) {
+        var ready = $q.defer();
+        scope.isObjectReady = ready.promise;
+        require(["esri/symbols/SimpleMarkerSymbol", "esri/Color"], function (SimpleMarkerSymbol, Color) {
+          
+          scope.this_symbol = new SimpleMarkerSymbol(scope.json);
+          if (scope.color != undefined)
+          {
+            if (scope.color) scope.this_symbol.setColor(Color.fromString(scope.color));
+            scope.$watch("color", function (n, o)
+            {
+              if (scope.color && n !== o) {
+                scope.this_symbol.setColor(Color.fromString(scope.color));
+              }
+            });
+          }
+          
+          ready.resolve();
+          scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] );
+          if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
+        });
+      }
+    },
+    controller: function ($scope) {
+      $scope.infos = [];
+      this.setSymbol = function (s) {
+        $scope.isObjectReady.then(function()
+        {
+          $scope.this_symbol.setOutline(s);
+          $scope.ctrl.setSymbol($scope.this_symbol);
+        });
+      };
+    }
+  };
+});
