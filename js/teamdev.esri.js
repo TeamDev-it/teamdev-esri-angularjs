@@ -131,9 +131,10 @@ m.directive("esriMap", function ($q, esriRegistry) {
 
         var options = {
           basemap: "gray",
-          autoResize: true,
+          autoResize: false,
         };
 
+        if (scope.autoresize) options.autoResize = scope.autoresize;
         if (scope.mapcenter) options.center = scope.mapcenter;
         if (scope.mapbase) options.basemap = scope.mapbase;
         if (scope.mapzoom) options.zoom = scope.mapzoom;
@@ -173,12 +174,12 @@ m.directive("esriMap", function ($q, esriRegistry) {
         prepared.promise.then(function () {
           esriRegistry.set(scope.mapid, scope.esri_map);
           if (scope.esri_map.loaded) {
-            scope.esri_map.resize();
+            //scope.esri_map.resize();
             if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);
           }
           else {
             scope.esri_map.on("load", function () {
-              scope.esri_map.resize();
+              //scope.esri_map.resize();
               if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);
             });
           }
@@ -233,6 +234,7 @@ m.directive("esriMap", function ($q, esriRegistry) {
     restrict: "E",
     replace: true,
     scope: {
+      autoresize: "=autoResize",
       mapcenter: "=mapCenter",
       webmapid: "@webmapid",
       mapid: "@mapId",
@@ -267,7 +269,9 @@ m.directive("esriMap", function ($q, esriRegistry) {
       this.removeLayer = function (l) {
         $scope.isObjectReady.then(function () {
           $scope.esri_map.removeLayer(l);
-          if (l.id) esriRegistry.remove(l.id);
+          // Non devo rimuovere in modo coatto l'oggetto dal registry. 
+          // L'oggetto si rimuoverà da solo al $destroy
+          //if (l.id) esriRegistry.remove(l.id);
         });
       };
       this.getMap = function (action) {
@@ -304,10 +308,13 @@ m.directive("featureLayer", function ($q, esriRegistry) {
         var ready = $q.defer();
         scope.isObjectReady = ready.promise;
         require(["esri/layers/FeatureLayer", "esri/graphicsUtils", "esri/IdentityManager"], function (FeatureLayer, GraphicsUtils, esriIm) {
-
-
           console.log(esriIm);
-          scope.this_layer = new FeatureLayer(attrs.url, evaluateOptions(scope));
+
+          if (attrs.url)
+            scope.this_layer = new FeatureLayer(attrs.url, evaluateOptions(scope));
+          else
+            scope.this_layer = new FeatureLayer({ featureSet: null, layerDefinition: { "geometryType": "esriGeometryPolygon", "fields": [] } }, evaluateOptions(scope));
+
           esriMap.addLayer(scope.this_layer);
 
           if (scope.id) {
@@ -315,13 +322,14 @@ m.directive("featureLayer", function ($q, esriRegistry) {
             esriRegistry.set(scope.id, scope.this_layer);
           }
 
-
-
-          scope.this_layer.on("load", function (r) {
+          if (scope.this_layer.loaded)
             ready.resolve();
-            if (scope.onReady())
-              scope.onReady()(scope.this_layer);
-          });
+          else
+            scope.this_layer.on("load", function (r) {
+              ready.resolve();
+            });
+
+          scope.isObjectReady.then(function () { if (scope.onReady()) scope.onReady()(scope.this_layer); });
 
           if (scope.onClick() || scope.showInfoWindowOnClick)
             scope.this_layer.on("click", function (r) {
@@ -382,7 +390,7 @@ m.directive("featureLayer", function ($q, esriRegistry) {
 
         scope.$on("$destroy", function () {
           scope.isObjectReady.then(function () {
-            if (scope.id) esriRegistry.remove(scope.id);
+            if (scope.id && esriRegistry.get(scope.id) === scope.this_layer) esriRegistry.remove(scope.id);
             esriMap.removeLayer(scope.this_layer);
           });
         });
@@ -462,7 +470,7 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
         });
         scope.$on("$destroy", function () {
           scope.isObjectReady.then(function () {
-            if (scope.id) esriRegistry.remove(scope.id);
+            if (scope.id && esriRegistry.get(scope.id) === scope.this_layer) esriRegistry.remove(scope.id);
             esriMap.removeLayer(scope.this_layer);
           });
         });
@@ -595,7 +603,8 @@ m.directive("point", function ($q) {
       if (scope.this_point.spatialReference.wkid == "4326")
         scope.this_point = webMercatorUtils.geographicToWebMercator(scope.this_point);
 
-      scope.geometry = scope.this_point;
+      if (scope.geometry)
+        scope.geometry = scope.this_point;
 
       if (scope.symbol) {
         scope.graphic = new Graphic(scope.this_point, scope.symbol);
@@ -688,7 +697,8 @@ m.directive("circle", function ($q) {
         }
         if (scope.extra) scope.graphic.extra = scope.extra;
 
-        scope.geometry = scope.this_point;
+        if (scope.geometry)
+          scope.geometry = scope.this_point;
         ready.resolve();
       });
   }
@@ -708,7 +718,7 @@ m.directive("circle", function ($q) {
       pre: function (scope, element, attrs, layers) {
         var layer = layers[0] || layers[1];
         renderpoint(scope, layer);
-        scope.$on("$destroy", function () { scope.isObjectReadythen(function () { layer.remove(scope.graphic); }); });
+        scope.$on("$destroy", function () { scope.isObjectReady.then(function () { layer.remove(scope.graphic); }); });
       }
     },
     controller: function ($scope) {
