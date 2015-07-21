@@ -219,6 +219,15 @@ m.directive("esriMap", function ($q, esriRegistry) {
         });
       }
     });
+    if (scope.hideinfowindow !== undefined) scope.$watch("hideinfowindow", function (n, o) {
+      if (scope.esri_map && scope.esri_map.loaded) {
+        scope.isObjectReady.then(function () {
+          if (n)
+            scope.esri_map.infoWindow.hide();
+        });
+      }
+    });
+      
     createMap();
   };
 
@@ -256,6 +265,7 @@ m.directive("esriMap", function ($q, esriRegistry) {
       clickTolerance: "=",
       isOnMobileDevice: "=",
       credentials: "=",
+      hideinfowindow: "=hideInfoWindow"
     },
     compile: compiler,
     controller: function ($scope) {
@@ -455,7 +465,7 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
             });
           });
         });
-        scope.$watch("visible", function (n, o) {
+        if (scope.visible) scope.$watch("visible", function (n, o) {
           if (scope.this_layer && n !== o) {
             scope.this_layer.setVisibility(n);
           }
@@ -734,17 +744,19 @@ m.directive("infoWindow", function ($q) {
       contentFunc: "&",
       titleFunc: "&"
     },
-    link: function (scope, element, attr, parents) {
-      element.css("display", "none");
-      var parent = parents[0] || parents[1] || parents[2];
+    link: {
+      pre: function (scope, element, attr, parents) {
+        element.css("display", "none");
+        var parent = parents[0] || parents[1] || parents[2];
 
-      var content = element[0].innerHTML;
-      if (scope.contentFunc() instanceof Function) content = scope.contentFunc();
+        var content = element[0].innerHTML;
+        if (scope.contentFunc() instanceof Function) content = scope.contentFunc();
 
-      var title = attr.title;
-      if (scope.titleFunc() instanceof Function) title = scope.titleFunc();
+        var title = attr.title;
+        if (scope.titleFunc() instanceof Function) title = scope.titleFunc();
 
-      parent.setInfoWindow(title, content);
+        parent.setInfoWindow(title, content);
+      }
     }
   };
 });
