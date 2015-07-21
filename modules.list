@@ -1,3 +1,5 @@
+"esri/arcgis/OAuthInfo"
+"esri/arcgis/Portal"
 "esri/arcgis/utils"
 "esri/Color"
 "esri/graphic"
