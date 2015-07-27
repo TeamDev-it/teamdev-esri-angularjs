@@ -280,7 +280,7 @@ m.directive("esriMap", function ($q, esriRegistry) {
         $scope.isObjectReady.then(function () {
           $scope.esri_map.removeLayer(l);
           // Non devo rimuovere in modo coatto l'oggetto dal registry. 
-          // L'oggetto si rimuoverà da solo al $destroy
+          // L'oggetto si rimuoverï¿½ da solo al $destroy
           //if (l.id) esriRegistry.remove(l.id);
         });
       };
@@ -901,6 +901,44 @@ m.directive("simpleLineSymbol", function ($q) {
     }
   };
 });
+
+m.directive("search", function ($q,esriRegistry) {
+  return {
+    restrict: "E",
+    require: "^esriMap",
+    scope: {
+      id: "@",
+      target:"@"
+    },
+    link: {
+      pre: function (scope, element, attrs, esriMap) {
+        var ready = $q.defer();
+        scope.isObjectReady = ready.promise;
+
+        require(["esri/dijit/Search"], function (Search) {
+          esriMap.getMap(function (m) {
+
+            scope.this_layer = new Search({ map: m }, scope.target);
+            scope.this_layer.startup();
+
+            if (scope.id) {
+              scope.this_layer.id = scope.id;
+              esriRegistry.set(scope.id, scope.this_layer);
+            }
+            ready.resolve();
+          });
+          scope.$on("$destroy", function () {
+            scope.isObjectReady.then(function () {
+              if (scope.id) esriRegistry.remove(scope.id);
+              scope.this_layer.destroy();
+            });
+          });
+        });
+      }
+    }
+  };
+});
+
 
 m.directive("simpleFillSymbol", function ($q) {
   return {
