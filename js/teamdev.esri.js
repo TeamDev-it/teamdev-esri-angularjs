@@ -159,7 +159,9 @@ m.directive("esriMap", function ($q, esriRegistry) {
           esriIm.registerToken(scope.credentials);
         }
 
-
+        if (scope.disableScrollZoom)
+          options.smartNavigation = false;
+        
         if (scope.webmapid) {
           arcgisUtils.createMap(scope.webmapid, scope.mapid, { mapOptions: options }).then(function (result) {
             scope.esri_map = result.map;
@@ -175,11 +177,15 @@ m.directive("esriMap", function ($q, esriRegistry) {
           esriRegistry.set(scope.mapid, scope.esri_map);
           if (scope.esri_map.loaded) {
             //scope.esri_map.resize();
+            if (scope.disableScrollZoom)
+              scope.esri_map.disableScrollWheelZoom();
             if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);
           }
           else {
             scope.esri_map.on("load", function () {
               //scope.esri_map.resize();
+              if (scope.disableScrollZoom)
+                scope.esri_map.disableScrollWheelZoom();
               if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);
             });
           }
@@ -267,7 +273,8 @@ m.directive("esriMap", function ($q, esriRegistry) {
       clickTolerance: "=",
       isOnMobileDevice: "=",
       credentials: "=",
-      hideinfowindow: "=hideInfoWindow"
+      hideinfowindow: "=hideInfoWindow",
+      disableScrollZoom: "="
     },
     compile: compiler,
     controller: function ($scope) {
@@ -278,7 +285,9 @@ m.directive("esriMap", function ($q, esriRegistry) {
       };
       this.removeLayer = function (l) {
         $scope.isObjectReady.then(function () {
-          $scope.esri_map.removeLayer(l);
+          if(typeof($scope.esri_map._gc) !== "undefined" && $scope.esri_map._gc && typeof($scope.esri_map._gc._surface) !== "undefined" && $scope.esri_map._gc._surface)
+            $scope.esri_map.removeLayer(l);
+
           // Non devo rimuovere in modo coatto l'oggetto dal registry. 
           // L'oggetto si rimuover� da solo al $destroy
           //if (l.id) esriRegistry.remove(l.id);
@@ -614,7 +623,7 @@ m.directive("point", function ($q) {
       if (scope.this_point.spatialReference.wkid == "4326")
         scope.this_point = webMercatorUtils.geographicToWebMercator(scope.this_point);
 
-      if (scope.geometry)
+      if (typeof(scope.geometry) !== "undefined")
         scope.geometry = scope.this_point;
 
       if (scope.symbol) {
@@ -632,6 +641,30 @@ m.directive("point", function ($q) {
     });
   }
 
+  function redrawpoint(scope, layer)
+  {
+    require(["esri/geometry/Point", "esri/graphic", "esri/SpatialReference", "esri/geometry/webMercatorUtils"], function (Point, Graphic, SpatialReference, webMercatorUtils) {
+      if (scope.graphic)
+      {
+        var prevgraphic = scope.graphic;
+        if (prevgraphic._layer && prevgraphic._layer.graphics && prevgraphic._layer.graphics.length > 0)
+        {
+          var i = prevgraphic._layer.graphics.indexOf(prevgraphic);
+          prevgraphic._layer.graphics.splice(i, 1);
+        }
+        layer.remove(prevgraphic);
+        prevgraphic.hide();
+        if (scope.symbol)
+          scope.graphic = new Graphic(scope.this_point, scope.symbol);
+        else
+          scope.graphic = new Graphic(scope.this_point);
+        layer.add(scope.graphic);
+        scope.graphic.draw();
+        
+      }
+    });
+  }
+  
   return {
     restrict: "E",
     require: ["?^graphicsLayer", "?^featureLayer"],
@@ -650,10 +683,23 @@ m.directive("point", function ($q) {
         scope.__layer = layer;
         scope.$on("$destroy", function () { scope.isObjectReady.then(function () { layer.remove(scope.graphic); }) });
         scope.$watch("latitude", function (n, o) {
-          if (scope.this_point && n != o) scope.this_point.setLatitude(n);
+          if (scope.this_point && n != o)
+          {
+            scope.this_point.setY(n);
+            redrawpoint(scope, layer);
+            if (typeof(scope.geometry) !== "undefined")
+              scope.geometry = scope.this_point;
+            
+          }
         });
         scope.$watch("longitude", function (n, o) {
-          if (scope.this_point && n != o) scope.this_point.setLongitude(n);
+          if (scope.this_point && n != o)
+          {
+            scope.this_point.setX(n);
+            redrawpoint(scope, layer);
+            if (typeof(scope.geometry) !== "undefined")
+              scope.geometry = scope.this_point;
+          }
         });
       }
       /*,
@@ -709,7 +755,7 @@ m.directive("circle", function ($q) {
         }
         if (scope.extra) scope.graphic.extra = scope.extra;
 
-        if (scope.geometry)
+        if (typeof(scope.geometry) !== "undefined")
           scope.geometry = scope.this_point;
         ready.resolve();
       });
@@ -1047,9 +1093,10 @@ m.directive("simpleTextSymbol", function ($q) {
           if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
           scope.$watch("text", function (n, o)
           {
-            if (scope.text && scope.ctrl && n !== o) {
-              scope.this_symbol.setText(n);
-            }
+//             if (scope.text && scope.ctrl && n !== o) {
+//               scope.this_symbol.setText(n);
+//             }
+            scope.this_symbol.setText(scope.text);
           });
         });
       }
