@@ -85,6 +85,7 @@ m.factory("esriQuery", function ($q, esriRegistry) {
         setParameter(params, where, "mapExtent");
         setParameter(params, where, "maxAllowableOffset");
         setParameter(params, where, "returnGeometry");
+        setParameter(params, where, "orderByFields");
         setParameter(params, where, "spatialReference");
         setParameter(params, where, "timeExtent");
         setParameter(params, where, "tolerance");
@@ -104,6 +105,7 @@ m.factory("esriQuery", function ($q, esriRegistry) {
           var query = new Query();
 
           setParameter(query, options, "returnGeometry");
+          setParameter(query, options, "orderByFields");
           setParameter(query, options, "returnDistinctValues");
           setParameter(query, options, "distance");
 
@@ -348,7 +350,9 @@ m.directive("featureLayer", function ($q, esriRegistry) {
               ready.resolve();
             });
 
-          scope.isObjectReady.then(function () { if (scope.onReady()) scope.onReady()(scope.this_layer); });
+          scope.isObjectReady.then(function () {
+            if (scope.onReady()) scope.onReady()(scope.this_layer);
+          });
 
           if (scope.onClick() || scope.showInfoWindowOnClick)
             scope.this_layer.on("click", function (r) {
@@ -409,7 +413,8 @@ m.directive("featureLayer", function ($q, esriRegistry) {
 
         scope.$on("$destroy", function () {
           scope.isObjectReady.then(function () {
-            if (scope.id && esriRegistry.get(scope.id) === scope.this_layer) esriRegistry.remove(scope.id);
+            if (scope.id && esriRegistry.get(scope.id) === scope.this_layer)
+              esriRegistry.remove(scope.id);
             esriMap.removeLayer(scope.this_layer);
           });
         });
@@ -722,6 +727,43 @@ m.directive("point", function ($q) {
   };
 });
 
+m.directive("search", function ($q) {
+  return {
+    restrict: "E",
+    require: "^esriMap",
+    scope: {
+      id: "@",
+      target: "@"
+    },
+    link: {
+      pre: function (scope, element, attrs, esriMap) {
+        var ready = $q.defer();
+        scope.isObjectReady = ready.promise;
+
+        require(["esri/dijit/Search"], function (Search) {
+          esriMap.getMap(function (m) {
+
+            scope.this_layer = new Search({ map: m }, scope.target);
+            scope.this_layer.startup();
+
+            if (scope.id) {
+              scope.this_layer.id = scope.id;
+              esriRegistry.set(scope.id, scope.this_layer);
+            }
+            ready.resolve();
+          });
+          scope.$on("$destroy", function () {
+            scope.isObjectReady.then(function () {
+              if (scope.id) esriRegistry.remove(scope.id);
+              scope.this_layer.destroy();
+            });
+          });
+        });
+      }
+    }
+  };
+});
+
 m.directive("circle", function ($q) {
   function renderpoint(scope, layer) {
     var ready = $q.defer();
@@ -791,28 +833,30 @@ m.directive("circle", function ($q) {
   };
 });
 
-m.directive("infoWindow", function ($q) {
+m.directive("infoWindow", function ($q, $compile) {
   return {
     restrict: "E",
     require: ["?^featureLayer", "?^graphicsLayer", "?^esriMap"],
     replace: true,
     scope: {
-      contentFunc: "&",
-      titleFunc: "&"
+      data: "=",
+      titleFunc: "&",
+      contentFunc: "&"
     },
-    link: {
-      pre: function (scope, element, attr, parents) {
-        element.css("display", "none");
-        var parent = parents[0] || parents[1] || parents[2];
+    link: function (scope, element, attr, parents) {
+      element.css("display", "none");
+      var parent = parents[0] || parents[1] || parents[2];
 
-        var content = element[0].innerHTML;
-        if (scope.contentFunc() instanceof Function) content = scope.contentFunc();
+      var content = element[0].innerHTML;
+      if (scope.contentFunc() instanceof Function) content = scope.contentFunc()();
 
-        var title = attr.title;
-        if (scope.titleFunc() instanceof Function) title = scope.titleFunc();
+      content = "<div>" + content + "</div>";
 
-        parent.setInfoWindow(title, content);
-      }
+      var title = attr.title;
+      if (scope.titleFunc() instanceof Function) title = scope.titleFunc();
+      var el = angular.element(content);
+      parent.setInfoWindow(title, el[0]); //uuuuu
+      $compile(el)(scope)
     }
   };
 });
@@ -944,43 +988,6 @@ m.directive("simpleLineSymbol", function ($q) {
         });
 
       });
-    }
-  };
-});
-
-m.directive("search", function ($q,esriRegistry) {
-  return {
-    restrict: "E",
-    require: "^esriMap",
-    scope: {
-      id: "@",
-      target:"@"
-    },
-    link: {
-      pre: function (scope, element, attrs, esriMap) {
-        var ready = $q.defer();
-        scope.isObjectReady = ready.promise;
-
-        require(["esri/dijit/Search"], function (Search) {
-          esriMap.getMap(function (m) {
-
-            scope.this_layer = new Search({ map: m }, scope.target);
-            scope.this_layer.startup();
-
-            if (scope.id) {
-              scope.this_layer.id = scope.id;
-              esriRegistry.set(scope.id, scope.this_layer);
-            }
-            ready.resolve();
-          });
-          scope.$on("$destroy", function () {
-            scope.isObjectReady.then(function () {
-              if (scope.id) esriRegistry.remove(scope.id);
-              scope.this_layer.destroy();
-            });
-          });
-        });
-      }
     }
   };
 });
