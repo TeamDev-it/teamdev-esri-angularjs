@@ -828,6 +828,41 @@ m.directive("circle", function ($q) {
   };
 });
 
+m.directive("tooltip", function ($timeout) {
+  return {
+    restrict: "E",
+    require: ["^featureLayer"],
+    replace: false,
+    link: function (scope, element, attr, layer, transclude) {
+      element.css("display", "none");
+      element.css("position", "fixed");
+      element.css("z-index", "9999");
+      scope.$g = null;
+      scope._tooltipHide = null;
+      if (layer[0])
+        layer[0].getLayer(function (l) {
+          require(["dojo/_base/connect"], function (connect) {
+            connect.connect(l, "onMouseOut", function () {
+              if (scope._tooltipHide)
+                $timeout.cancel(scope._tooltipHide);
+              scope._tooltipHide = $timeout(function () {
+                element.css("display", "none");
+                scope._tooltipHide = null;
+              }, 2000);
+
+            });
+            connect.connect(l, "onMouseMove", function (m) {
+              scope.$apply(function () { scope.$g = m.graphic; });
+              element.css("display", "block");
+              element.css("top", m.clientY + 2);
+              element.css("left", m.clientX + 2);
+            });
+          });
+        });
+    }
+  };
+});
+
 m.directive("infoWindow", function ($q, $compile, $timeout) {
   return {
     restrict: "E",
@@ -835,20 +870,30 @@ m.directive("infoWindow", function ($q, $compile, $timeout) {
     replace: false,
     transclude: true,
     scope: {
-      data: "=",
       titleFunc: "&",
-      contentFunc: "&"
     },
     link: function (scope, element, attr, parents, transclude) {
       element.css("display", "none");
       var parent = parents[0] || parents[1] || parents[2];
-
+      var transclusionScope;
       var title = attr.title;
       if (scope.titleFunc() instanceof Function) title = scope.titleFunc();
 
-      transclude(function (clone) {
+      transclude(function (clone, ss) {
         parent.setInfoWindow(title, clone[1]);
+        transclusionScope = ss;
       });
+
+      if (parents[2])
+        parents[2].getMap(function (map) {
+          require(["dojo/_base/connect"], function (connect) {
+            connect.connect(map.infoWindow, "onSelectionChange", function () {
+              if (map.infoWindow.features) {
+                transclusionScope.$apply(function () { transclusionScope.$g = map.infoWindow.features[map.infoWindow.selectedIndex]; });
+              }
+            });
+          });
+        });
     }
   };
 });
