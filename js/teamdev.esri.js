@@ -893,12 +893,21 @@ m.directive("infoWindow", function ($q, $compile, $timeout) {
         parent.setInfoWindow(title, clone[1]);
         transclusionScope = ss;
       });
+      
+      var ie = navigator.userAgent.match(/MSIE/);
+      var ie11 = navigator.userAgent.match(/Trident\/7\./);
 
       if (parents[2])
         parents[2].getMap(function (map) {
           require(["dojo/_base/connect"], function (connect) {
             connect.connect(map.infoWindow, "onSelectionChange", function () {
               if (map.infoWindow.features) {
+                /* Retransclude element to solve issues in IE 9-10-11 */
+                if(ie || ie11)
+                transclude(function (clone, ss) {
+                  parent.setInfoWindow(title, clone[1]);
+                  transclusionScope = ss;
+                });
                 transclusionScope.$apply(function () { transclusionScope.$g = map.infoWindow.features[map.infoWindow.selectedIndex]; });
               }
             });
