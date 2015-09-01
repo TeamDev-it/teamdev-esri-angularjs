@@ -322,6 +322,7 @@ m.directive("featureLayer", function ($q, esriRegistry) {
       zoomToSelection: "@",
       mode: "@",
       onReady: "&",
+      index: "@",
       showInfoWindowOnClick: "="
     },
     link: {
@@ -336,7 +337,7 @@ m.directive("featureLayer", function ($q, esriRegistry) {
           else
             scope.this_layer = new FeatureLayer({ featureSet: null, layerDefinition: { "geometryType": "esriGeometryPolygon", "fields": [] } }, evaluateOptions(scope));
 
-          esriMap.addLayer(scope.this_layer);
+          esriMap.addLayer(scope.this_layer, scope.index);
 
           if (scope.id) {
             scope.this_layer.id = scope.id;
@@ -396,7 +397,7 @@ m.directive("featureLayer", function ($q, esriRegistry) {
           }
 
           scope.this_layer.on("selection-complete", function () {
-            if (scope.zoomToSelection) {
+            if (scope.zoomToSelection == true) {
               scope.isObjectReady.then(function () {
                 var extent = GraphicsUtils.graphicsExtent(scope.this_layer.getSelectedFeatures());
                 esriMap.getMap(function (m) { m.setExtent(extent); });
@@ -465,7 +466,9 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
     scope: {
       id: "@",
       visible: "=",
-      onClick: "&"
+      onClick: "&",
+      index: "@"
+
     },
     link: {
       pre: function (scope, element, attrs, esriMap) {
@@ -474,7 +477,7 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
 
         require(["esri/layers/GraphicsLayer"], function (GraphicsLayer) {
           scope.this_layer = new GraphicsLayer();
-          esriMap.addLayer(scope.this_layer);
+          esriMap.addLayer(scope.this_layer, scope.index);
           if (scope.id) {
             scope.this_layer.id = scope.id;
             esriRegistry.set(scope.id, scope.this_layer);
@@ -813,6 +816,13 @@ m.directive("circle", function ($q) {
       pre: function (scope, element, attrs, layers) {
         var layer = layers[0] || layers[1];
         renderpoint(scope, layer);
+
+        scope.$watchGroup(["latitude", "longitude", "radius"], function () {
+          scope.isObjectReady.then(function () {
+            layer.remove(scope.graphic);
+            renderpoint(scope, layer);
+          });
+        });
         scope.$on("$destroy", function () { scope.isObjectReady.then(function () { layer.remove(scope.graphic); }); });
       }
     },
@@ -953,7 +963,7 @@ m.directive("pictureMarkerSymbol", function ($q) {
     scope: {
       symbolUrl: "@"
     },
-    require: ["?point", "?^point", "?^graphicsLayer", "?^featureLayer", "?^valueInfo", "^?uniqueValueRenderer"],
+    require: ["?^valueInfo", "^?uniqueValueRenderer", "?point", "?^point", "?^graphicsLayer", "?^featureLayer"],
     link: function (scope, element, attr, parents) {
       var ready = $q.defer();
       scope.isObjectReady = ready.promise;
