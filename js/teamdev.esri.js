@@ -725,7 +725,7 @@ m.directive("point", function ($q) {
   };
 });
 
-m.directive("search", function ($q) {
+m.directive("search", function ($q, esriRegistry) {
   return {
     restrict: "E",
     require: "^esriMap",
@@ -1127,15 +1127,15 @@ m.directive("simpleTextSymbol", function ($q) {
           var fontVariant = Font.VARIANT_NORMAL;
           if (scope.fontVariant) {
             switch (scope.fontVariant) {
-              case "VARIANT_SMALLCAPS": style = Font.VARIANT_SMALLCAPS; break;
+              case "VARIANT_SMALLCAPS": fontVariant = Font.VARIANT_SMALLCAPS; break;
             }
           }
           var fontWeight = Font.WEIGHT_NORMAL
           if (scope.fontWeight) {
             switch (scope.fontWeight) {
-              case "WEIGHT_BOLD": style = Font.WEIGHT_BOLD; break;
-              case "WEIGHT_BOLDER": style = Font.WEIGHT_BOLDER; break;
-              case "WEIGHT_LIGHTER": style = Font.WEIGHT_LIGHTER; break;
+              case "WEIGHT_BOLD": fontWeight = Font.WEIGHT_BOLD; break;
+              case "WEIGHT_BOLDER": fontWeight = Font.WEIGHT_BOLDER; break;
+              case "WEIGHT_LIGHTER": fontWeight = Font.WEIGHT_LIGHTER; break;
             }
           }
           var font = new Font(scope.fontSize || "16", fontStyle, fontVariant, fontWeight, scope.fontFamily);

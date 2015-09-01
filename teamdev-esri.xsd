@@ -1,0 +1,296 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="esri-map" type="mapType"/>
+
+  <xs:complexType name="mapType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="feature-layer" type="featureLayerType"></xs:element>
+      <xs:element name="graphics-layer" type="graphicsLayerType"></xs:element>
+      <xs:element name="label-layer" type="labelLayerType"></xs:element>
+      <xs:element name="search" type="searchType"></xs:element>
+      <xs:element name="info-window" type="infoWindowType"></xs:element>
+    </xs:choice>
+    <xs:attribute name="base-map" use="required" >
+      <xs:simpleType>
+        <xs:restriction>
+          <xs:enumeration value="streets"></xs:enumeration>
+          <xs:enumeration value="satellite"></xs:enumeration>
+          <xs:enumeration value="hybrid"></xs:enumeration>
+          <xs:enumeration value="topo"></xs:enumeration>
+          <xs:enumeration value="gray"></xs:enumeration>
+          <xs:enumeration value="dark-gray"></xs:enumeration>
+          <xs:enumeration value="oceans"></xs:enumeration>
+          <xs:enumeration value="national-geographic"></xs:enumeration>
+          <xs:enumeration value="terrain"></xs:enumeration>
+          <xs:enumeration value="osm"></xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="map-id" type="xs:string" use="required" />
+    <xs:attribute name="zoom" type="xs:string" use="optional" />
+    <xs:attribute name="map-center" type="xs:string" use="optional" />
+    <xs:attribute name="auto-resize" type="xs:string" use="optional" />
+    <xs:attribute name="webmapid" type="xs:string" use="optional" />
+    <xs:attribute name="scale" type="xs:string" use="optional" />
+    <xs:attribute name="min-zoom" type="xs:string" use="optional" />
+    <xs:attribute name="max-zoom" type="xs:string" use="optional" />
+    <xs:attribute name="min-scale" type="xs:string" use="optional" />
+    <xs:attribute name="max-scale" type="xs:string" use="optional" />
+    <xs:attribute name="show-navigation" type="xs:string" use="optional" />
+    <xs:attribute name="show-logo" type="xs:string" use="optional" />
+    <xs:attribute name="show-attribution" type="xs:string" use="optional" />
+    <xs:attribute name="show-labels" type="xs:string" use="optional" />
+    <xs:attribute name="wrap-around180" type="xs:string" use="optional" />
+    <xs:attribute name="show-info-window-on-click" type="xs:string" use="optional" />
+    <xs:attribute name="slider" type="xs:string" use="optional" />
+    <xs:attribute name="on-map-ready" type="xs:string" use="optional" />
+    <xs:attribute name="on-click" type="xs:string" use="optional" />
+    <xs:attribute name="on-graphics-click" type="xs:string" use="optional" />
+    <xs:attribute name="click-tolerance" type="xs:string" use="optional" />
+    <xs:attribute name="is-on-mobile-device" type="xs:string" use="optional" />
+    <xs:attribute name="credentials" type="xs:string" use="optional" />
+    <xs:attribute name="hide-info-window" type="xs:string" use="optional" />
+    <xs:attribute name="disable-scroll-zoom" type="xs:string" use="optional" />
+
+  </xs:complexType>
+
+  <xs:complexType name="featureLayerType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="label-layer" type="labelLayerType"></xs:element>
+      <xs:element name="poly-line" type="polyLineType"></xs:element>
+      <xs:element name="point" type="pointType"></xs:element>
+      <xs:element name="circle" type="circleType"></xs:element>
+      <xs:element name="tooltip" type="tooltipType"></xs:element>
+      <xs:element name="info-window" type="infoWindowType"></xs:element>
+      <xs:element name="unique-value-renderer-type" type="uniqueValueRendererType"></xs:element>
+      <xs:element name="picture-marker-symbol" type="pictureMarkerSymbolType"></xs:element>
+      <xs:element name="simple-fill-symbol" type="simpleFillSymbolType"></xs:element>
+      <xs:element name="simple-text-symbol" type="simpleTextSymbolType"></xs:element>
+      <xs:element name="simple-marker-symbol" type="simpleMarkerSymbolType"></xs:element>
+      <xs:element name="simple-line-symbol" type="simpleLineSymbolType"></xs:element>
+    </xs:choice>
+    <xs:attribute name="id" type="xs:string" use="required" />
+    <xs:attribute name="url" type="xs:string" use="optional" />
+    <xs:attribute name="visible" type="xs:string" use="optional" />
+    <xs:attribute name="on-click" type="xs:string" use="optional" />
+    <xs:attribute name="out-fields" type="xs:string" use="optional" />
+    <xs:attribute name="zoom-to-selection" type="xs:string" use="optional" />
+    <xs:attribute name="mode" use="required" >
+      <xs:simpleType>
+        <xs:restriction>
+          <xs:enumeration value="MODE_SNAPSHOT"/>
+          <xs:enumeration value="MODE_ONDEMAND"/>
+          <xs:enumeration value="MODE_SELECTION"/>
+          <xs:enumeration value="MODE_AUTO"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="on-ready" type="xs:string" use="optional" />
+    <xs:attribute name="index" type="xs:string" use="optional" />
+    <xs:attribute name="show-info-window-on-click" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="graphicsLayerType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="poly-line" type="polyLineType"></xs:element>
+      <xs:element name="point" type="pointType"></xs:element>
+      <xs:element name="circle" type="circleType"></xs:element>
+      <xs:element name="info-window" type="infoWindowType"></xs:element>
+      <xs:element name="picture-marker-symbol" type="pictureMarkerSymbolType"></xs:element>
+      <xs:element name="simple-fill-symbol" type="simpleFillSymbolType"></xs:element>
+      <xs:element name="simple-text-symbol" type="simpleTextSymbolType"></xs:element>
+      <xs:element name="simple-marker-symbol" type="simpleMarkerSymbolType"></xs:element>
+      <xs:element name="simple-line-symbol" type="simpleLineSymbolType"></xs:element>
+    </xs:choice>
+    <xs:attribute name="id" type="xs:string" use="required" />
+    <xs:attribute name="visible" type="xs:string" use="optional" />
+    <xs:attribute name="on-click" type="xs:string" use="optional" />
+    <xs:attribute name="index" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="labelLayerType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+
+    </xs:choice>
+    <xs:attribute name="id" type="xs:string" use="required" />
+    <xs:attribute name="visible" type="xs:string" use="optional" />
+    <xs:attribute name="on-click" type="xs:string" use="optional" />
+    <xs:attribute name="index" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="polyLineType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="simple-fill-symbol" type="simpleFillSymbolType"></xs:element>
+      <xs:element name="simple-line-symbol" type="simpleLineSymbolType"></xs:element>
+
+    </xs:choice>
+    <xs:attribute name="json" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="searchType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+
+    </xs:choice>
+    <xs:attribute name="id" type="xs:string" use="required" />
+    <xs:attribute name="target" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="pointType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="picture-marker-symbol" type="pictureMarkerSymbolType"></xs:element>
+      <xs:element name="simple-fill-symbol" type="simpleFillSymbolType"></xs:element>
+      <xs:element name="simple-text-symbol" type="simpleTextSymbolType"></xs:element>
+      <xs:element name="simple-marker-symbol" type="simpleMarkerSymbolType"></xs:element>
+      <xs:element name="simple-line-symbol" type="simpleLineSymbolType"></xs:element>
+
+    </xs:choice>
+    <xs:attribute name="spatial-reference" type="xs:string" use="optional" />
+    <xs:attribute name="latitude" type="xs:string" use="optional" />
+    <xs:attribute name="longitude" type="xs:string" use="optional" />
+    <xs:attribute name="json" type="xs:string" use="optional" />
+    <xs:attribute name="extra" type="xs:string" use="optional" />
+    <xs:attribute name="geometry" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="circleType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="simple-fill-symbol" type="simpleFillSymbolType"></xs:element>
+      <xs:element name="simple-line-symbol" type="simpleLineSymbolType"></xs:element>
+    </xs:choice>
+    <xs:attribute name="spatial-reference" type="xs:string" use="optional" />
+    <xs:attribute name="latitude" type="xs:string" use="optional" />
+    <xs:attribute name="longitude" type="xs:string" use="optional" />
+    <xs:attribute name="radius" type="xs:string" use="optional" />
+    <xs:attribute name="extra" type="xs:string" use="optional" />
+    <xs:attribute name="geometry" type="xs:string" use="optional" />
+  </xs:complexType>
+
+
+  <xs:complexType name="tooltipType">
+    <xs:all></xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="infoWindowType">
+    <xs:all></xs:all>
+    <xs:attribute name="title-func" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="uniqueValueRendererType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="value-info" type="valueInfoType"></xs:element>
+      <xs:element name="picture-marker-symbol" type="pictureMarkerSymbolType"></xs:element>
+    </xs:choice>
+    <xs:attribute name="field" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="valueInfoType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="picture-marker-symbol" type="pictureMarkerSymbolType"></xs:element>
+    </xs:choice>
+    <xs:attribute name="value" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="pictureMarkerSymbolType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+
+    </xs:choice>
+    <xs:attribute name="symbol-url" type="xs:string" use="optional" />
+    <xs:attribute name="symbol-width" type="xs:string" use="optional" />
+    <xs:attribute name="symbol-height" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="simpleMarkerSymbolType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="simple-line-symbol" type="simpleLineSymbolType"></xs:element>
+    </xs:choice>
+    <xs:attribute name="json" type="xs:string" use="optional" />
+    <xs:attribute name="color" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="simpleFillSymbolType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="simple-line-symbol" type="simpleLineSymbolType"></xs:element>
+    </xs:choice>
+    <xs:attribute name="symbol-color" type="xs:string" use="required" />
+    <xs:attribute name="symbol-style" use="required" >
+      <xs:simpleType>
+        <xs:restriction>
+          <xs:enumeration value="STYLE_BACKWARD_DIAGONAL"></xs:enumeration>
+          <xs:enumeration value="STYLE_CROSS"></xs:enumeration>
+          <xs:enumeration value="STYLE_DIAGONAL_CROSS"></xs:enumeration>
+          <xs:enumeration value="STYLE_FORWARD_DIAGONAL"></xs:enumeration>
+          <xs:enumeration value="STYLE_HORIZONTAL"></xs:enumeration>
+          <xs:enumeration value="STYLE_NULL"></xs:enumeration>
+          <xs:enumeration value="STYLE_SOLID"></xs:enumeration>
+          <xs:enumeration value="STYLE_VERTICAL"></xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="simpleTextSymbolType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+
+    </xs:choice>
+    <xs:attribute name="text-color" type="xs:string" use="optional" />
+    <xs:attribute name="text" type="xs:string" use="optional" />
+    <xs:attribute name="font-size" type="xs:string" use="optional" />
+    <xs:attribute name="font-style" use="optional" >
+      <xs:simpleType>
+        <xs:restriction>
+          <xs:enumeration value="STYLE_ITALIC"></xs:enumeration>
+          <xs:enumeration value="STYLE_OBLIQUE"></xs:enumeration>
+          <xs:enumeration value="STYLE_NORMAL"></xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="font-variant" use="optional" >
+      <xs:simpleType>
+        <xs:restriction>
+          <xs:enumeration value="VARIANT_NORMAL"></xs:enumeration>
+          <xs:enumeration value="VARIANT_SMALLCAPS"></xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="font-weight" use="optional" >
+      <xs:simpleType>
+        <xs:restriction>
+          <xs:enumeration value="WEIGHT_NORMAL"></xs:enumeration>
+          <xs:enumeration value="WEIGHT_BOLD"></xs:enumeration>
+          <xs:enumeration value="WEIGHT_BOLDER"></xs:enumeration>
+          <xs:enumeration value="WEIGHT_LIGHTER"></xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="font-family" type="xs:string" use="optional" />
+    <xs:attribute name="x-offset" type="xs:string" use="optional" />
+    <xs:attribute name="y-offset" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="simpleLineSymbolType">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
+
+    </xs:choice>
+    <xs:attribute name="symbol-color" type="xs:string" use="optional" />
+    <xs:attribute name="symbol-width" type="xs:string" use="optional" />
+    <xs:attribute name="symbol-style" use="optional" >
+      <xs:simpleType>
+        <xs:restriction>
+          <xs:enumeration value="STYLE_DASH"></xs:enumeration>
+          <xs:enumeration value="STYLE_DASHDOT"></xs:enumeration>
+          <xs:enumeration value="STYLE_DASHDOTDOT"></xs:enumeration>
+          <xs:enumeration value="STYLE_DOT"></xs:enumeration>
+          <xs:enumeration value="STYLE_LONGDASHDOT"></xs:enumeration>
+          <xs:enumeration value="STYLE_NULL"></xs:enumeration>
+          <xs:enumeration value="STYLE_SOLID"></xs:enumeration>
+          <xs:enumeration value="STYLE_SHORTDASH"></xs:enumeration>
+          <xs:enumeration value="STYLE_SHORTDASHDOT"></xs:enumeration>
+          <xs:enumeration value="STYLE_SHORTDASHDOTDOT"></xs:enumeration>
+          <xs:enumeration value="STYLE_SHORTDOT"></xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+
+</xs:schema>
