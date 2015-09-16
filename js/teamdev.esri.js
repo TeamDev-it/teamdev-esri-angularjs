@@ -311,7 +311,7 @@ m.directive("esriMap", function ($q, esriRegistry) {
   };
 });
 
-m.directive("featureLayer", function ($q, esriRegistry) {
+m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
   return {
     restrict: "E",
     require: "^esriMap",
@@ -358,21 +358,21 @@ m.directive("featureLayer", function ($q, esriRegistry) {
             if (scope.onReady()) scope.onReady()(scope.this_layer);
           });
 
-          if (scope.onClick() || scope.showInfoWindowOnClick)
-            scope.this_layer.on("click", function (r) {
-              if (!scope.$$phase && !scope.$root.$$phase) scope.$apply(function () {
-                if (scope.onClick()) scope.onClick()(r);
-              });
-
-              if (scope.showInfoWindowOnClick) {
-                esriMap.getMap(function (rr) {
-                  rr.infoWindow.hide();
-                  rr.infoWindow.clearFeatures();
-                  rr.infoWindow.setFeatures([r.graphic]);
-                  rr.infoWindow.show(r.mapPoint);
-                });
-              }
+          //if (scope.onClick() || scope.showInfoWindowOnClick == true)
+          scope.this_layer.on("click", function (r) {
+            if (!scope.$$phase && !scope.$root.$$phase) scope.$apply(function () {
+              if (scope.onClick()) scope.onClick()(r);
             });
+
+            esriMap.getMap(function (rr) {
+              rr.infoWindow.hide();
+              rr.infoWindow.clearFeatures();
+              rr.infoWindow.setFeatures([r.graphic]);
+              if (scope.showInfoWindowOnClick == true)
+                $timeout(function () { rr.infoWindow.show(r.mapPoint); });
+            });
+
+          });
           function evaluateOptions(scope) {
             var options = {};
 
@@ -540,31 +540,60 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
   };
 });
 
-m.directive("editor", function($q){
-  return{
-    restrict : "E", 
-    require: ["^featureLayer", "^esriMap"], 
-    scope:{
-      editorDiv:"@", 
-      id: "@", 
-      enableSnapping: "@"
-    }, 
-    link: function(scope, element, attr, parents)
-    {
+m.directive("editor", function ($q) {
+  return {
+    restrict: "E",
+    require: ["^esriMap"],
+    scope: {
+      editorDiv: "@",
+      id: "@",
+      enableSnapping: "@",
+      toolbarVisible: "@",
+      maxUndoRedoOperations: "@",
+      geometryService: "@",
+      enableUndoRedo: "@",
+      disableAttributeUpdate: "@",
+      disableGeometryUpdate: "@",
+      enableSnappingMessage: "@",
+    },
+    link: function (scope, element, attr, parents) {
       var ready = $q.defer();
       scope.isObjectReady = ready.promise;
-      require(["esri/SnappingManager", "esri/dijit/editing/Editor", "esri/toolbars/draw"], 
-        function(SnappingManager, Editor, Draw){
-     
-          var layer = parents[0];
-          var map = parents[1];
-          var editor = new Editor({ settings:{layerInfos: { featureLayer: layer }, map: map}}, scope.editorDiv);
-          editor.startup();
-          
-          if(scope.enableSnapping == true)
-           map.enableSnapping();
+
+      parents[0].getMap(function (m) {
+        require(["esri/SnappingManager", "esri/dijit/editing/Editor", "esri/toolbars/draw", "dojo/i18n!esri/nls/jsapi", "dojo/_base/array", "dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dojo/domReady!"],
+          function (SnappingManager, Editor, Draw, i18n, arrayUtils) {
+
+            var featureLayerInfos = [];
+
+            for (var i in m._layers) {
+              if (m._layers[i].type === "Feature Layer")
+                featureLayerInfos.push({
+                  "featureLayer": m._layers[i]
+                });
+            }
+
+            var editor = new Editor({
+              settings: {
+                layerInfos: featureLayerInfos,
+                map: m,
+                toolbarVisible: scope.toolbarVisible || false,
+                maxUndoRedoOperations: scope.maxUndoRedoOperations || 5,
+                geometryService: scope.geometryService,
+                enableUndoRedo: scope.enableUndoRedo || false,
+                disableAttributeUpdate: scope.disableAttributeUpdate || false,
+                disableGeometryUpdate: scope.disableGeometryUpdate || false,
+              }
+            }, scope.editorDiv);
+            editor.startup();
+
+            i18n.toolbars.draw.start += scope.enableSnappingMessage || "<br/>Press <b>CTRL</b> to enable snapping";
+            i18n.toolbars.draw.addPoint += scope.enableSnappingMessage || "<br/>Press <b>CTRL</b> to enable snapping";
+
+            if (scope.enableSnapping == true)
+              map.enableSnapping();
+          });
       });
-      
     }
   };
 });
@@ -925,7 +954,7 @@ m.directive("infoWindow", function ($q, $compile, $timeout) {
         parent.setInfoWindow(title, clone[1]);
         transclusionScope = ss;
       });
-      
+
       var ie = navigator.userAgent.match(/MSIE/);
       var ie11 = navigator.userAgent.match(/Trident\/7\./);
 
@@ -935,12 +964,14 @@ m.directive("infoWindow", function ($q, $compile, $timeout) {
             connect.connect(map.infoWindow, "onSelectionChange", function () {
               if (map.infoWindow.features) {
                 /* Retransclude element to solve issues in IE 9-10-11 */
-                if(ie || ie11)
-                transclude(function (clone, ss) {
-                  parent.setInfoWindow(title, clone[1]);
-                  transclusionScope = ss;
+                if (ie || ie11)
+                  transclude(function (clone, ss) {
+                    parent.setInfoWindow(title, clone[1]);
+                    transclusionScope = ss;
+                  });
+                $timeout(function () {
+                  transclusionScope.$apply(function () { transclusionScope.$g = map.infoWindow.features[map.infoWindow.selectedIndex]; });
                 });
-                transclusionScope.$apply(function () { transclusionScope.$g = map.infoWindow.features[map.infoWindow.selectedIndex]; });
               }
             });
           });

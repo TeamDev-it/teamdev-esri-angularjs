@@ -19,6 +19,7 @@
       <xs:element ref="label-layer" ></xs:element>
       <xs:element ref="search" ></xs:element>
       <xs:element ref="info-window" ></xs:element>
+      <xs:element ref="editor" ></xs:element>
       </xs:choice>
     <xs:attribute name="base-map" use="required" >
       <xs:simpleType>
@@ -127,6 +128,12 @@
     <xs:attribute name="editor-div" type="xs:string" use="required" />
     <xs:attribute name="id" type="xs:string" use="required" />
     <xs:attribute name="enable-snapping" type="xs:boolean" use="optional" />
+    <xs:attribute name="toolbar-visible" type="xs:boolean" use="optional" />
+    <xs:attribute name="max-undo-redo-operations" type="xs:string" use="optional" />
+    <xs:attribute name="geometry-service" type="xs:string" use="optional" />
+    <xs:attribute name="enable-undo-redo" type="xs:boolean" use="optional" />
+    <xs:attribute name="disable-attribute-update" type="xs:boolean" use="optional" />
+    <xs:attribute name="disable-geometry-update" type="xs:boolean" use="optional" />
   </xs:complexType>
 </xs>
 
