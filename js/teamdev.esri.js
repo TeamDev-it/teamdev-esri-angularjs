@@ -540,6 +540,35 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
   };
 });
 
+m.directive("editor", function($q){
+  return{
+    restrict : "E", 
+    require: ["^featureLayer", "^esriMap"], 
+    scope:{
+      editorDiv:"@", 
+      id: "@", 
+      enableSnapping: "@"
+    }, 
+    link: function(scope, element, attr, parents)
+    {
+      var ready = $q.defer();
+      scope.isObjectReady = ready.promise;
+      require(["esri/SnappingManager", "esri/dijit/editing/Editor", "esri/toolbars/draw"], 
+        function(SnappingManager, Editor, Draw){
+     
+          var layer = parents[0];
+          var map = parents[1];
+          var editor = new Editor({ settings:{layerInfos: { featureLayer: layer }, map: map}}, scope.editorDiv);
+          editor.startup();
+          
+          if(scope.enableSnapping == true)
+           map.enableSnapping();
+      });
+      
+    }
+  };
+});
+
 m.directive("labelLayer", function ($q) {
   return {
     restrict: "E",

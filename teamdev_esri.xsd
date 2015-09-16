@@ -122,6 +122,14 @@
   </xs:complexType>
   </xs:element>
 
+<xs:element name="editor">
+  <xs:complexType>
+    <xs:attribute name="editor-div" type="xs:string" use="required" />
+    <xs:attribute name="id" type="xs:string" use="required" />
+    <xs:attribute name="enable-snapping" type="xs:boolean" use="optional" />
+  </xs:complexType>
+</xs>
+
 <xs:element name="label-layer" >
   <xs:complexType >
     <xs:attribute name="id" type="xs:string" use="required" />
