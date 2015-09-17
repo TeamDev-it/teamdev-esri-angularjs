@@ -81,7 +81,7 @@
       <xs:element ref="simple-marker-symbol" ></xs:element>
       <xs:element ref="simple-line-symbol" ></xs:element>
     </xs:choice>
-    <xs:attribute name="id" type="xs:string" use="required" />
+    <xs:attribute name="layer-id" type="xs:string" use="required" />
     <xs:attribute name="url" type="xs:string" use="optional" />
     <xs:attribute name="visible" type="xs:string" use="optional" />
     <xs:attribute name="on-click" type="xs:string" use="optional" />
@@ -122,7 +122,7 @@
       <xs:element ref="simple-marker-symbol" ></xs:element>
       <xs:element ref="simple-line-symbol" ></xs:element>
     </xs:choice>
-    <xs:attribute name="id" type="xs:string" use="required" />
+    <xs:attribute name="layer-id" type="xs:string" use="required" />
     <xs:attribute name="visible" type="xs:string" use="optional" />
     <xs:attribute name="on-click" type="xs:string" use="optional" />
     <xs:attribute name="index" type="xs:string" use="optional" />

@@ -1,5 +1,6 @@
 /* global O */
 /* global angular */
+angular.module("MapApp", ["teamdev.esri"]).controller("defaultController", function () { });
 var m = angular.module("teamdev.esri", []);
 
 m.factory("esriRegistry", function ($window) {
@@ -132,7 +133,7 @@ m.directive("esriMap", function ($q, esriRegistry) {
     function createMap() {
       var prepared = $q.defer();
       scope.isObjectReady = prepared.promise;
-      require(["esri/map", "esri/arcgis/utils", "esri/IdentityManager", "dojo/on", "dojo/touch", "dojo/domReady"], function (Map, arcgisUtils, esriIm, on, touch) {
+      require(["esri/map", "esri/arcgis/utils", "esri/IdentityManager", "dojo/on", "dojo/touch", "esri/geometry/Extent", "dojo/domReady"], function (Map, arcgisUtils, esriIm, on, touch, Extent) {
 
         var options = {
           basemap: "gray",
@@ -318,6 +319,7 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
     replace: true,
     scope: {
       id: "@",
+      layerId: "@",
       url: "@",
       visible: "=",
       onClick: "&",
@@ -332,7 +334,7 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
       onEditsComplete: "&",
       onGraphicAdd: "&",
       onGraphicRemove: "&",
-      editable : "@",
+      editable: "@",
     },
     link: {
       pre: function (scope, element, attrs, esriMap) {
@@ -340,58 +342,6 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
         scope.isObjectReady = ready.promise;
         require(["esri/layers/FeatureLayer", "esri/graphicsUtils", "esri/IdentityManager"], function (FeatureLayer, GraphicsUtils, esriIm) {
           console.log(esriIm);
-
-          if (attrs.url)
-            scope.this_layer = new FeatureLayer(attrs.url, evaluateOptions(scope));
-          else
-            scope.this_layer = new FeatureLayer({ featureSet: null, layerDefinition: { "geometryType": "esriGeometryPolygon", "fields": [] } }, evaluateOptions(scope));
-
-          esriMap.addLayer(scope.this_layer, scope.index);
-
-          if (scope.id) {
-            scope.this_layer.id = scope.id;
-            esriRegistry.set(scope.id, scope.this_layer);
-          }
-
-          if (scope.this_layer.loaded)
-            ready.resolve();
-          else
-            scope.this_layer.on("load", function (r) {
-              ready.resolve();
-            });
-
-          scope.isObjectReady.then(function () {
-
-            if (scope.editable)
-              try { scope.this_layer.setEditable(scope.editable); } catch (e) {
-                console.log("Setting Editing to Layer failed: " + e);
-              }
-
-            if (scope.onReady()) scope.onReady()(scope.this_layer);
-          });
-
-          //if (scope.onClick() || scope.showInfoWindowOnClick == true)
-          scope.this_layer.on("click", function (r) {
-            if (!scope.$$phase && !scope.$root.$$phase) scope.$apply(function () {
-              if (scope.onClick()) scope.onClick()(r);
-            });
-            else
-              if (scope.onClick()) scope.onClick()(r);
-
-            esriMap.getMap(function (rr) {
-              rr.infoWindow.hide();
-              rr.infoWindow.clearFeatures();
-              rr.infoWindow.setFeatures([r.graphic]);
-              if (scope.showInfoWindowOnClick == true)
-                $timeout(function () { rr.infoWindow.show(r.mapPoint); });
-            });
-          });
-
-          if (scope.onDblClick()) scope.this_layer.on("dbl-click", function (r) { scope.onDblClick()(r); });
-          if (scope.onBeforeApplyEdits()) scope.this_layer.on("before-apply-edits", function (r) { scope.onBeforeApplyEdits()(r); });
-          if (scope.onEditsComplete()) scope.this_layer.on("edits-complete", function (r) { scope.onEditsComplete()(r); });
-          if (scope.onGraphicAdd()) scope.this_layer.on("graphic-add", function (r) { scope.onGraphicAdd()(r); });
-          if (scope.onGraphicRemove()) scope.this_layer.on("graphic-remove", function (r) { scope.onGraphicRemove()(r); });
 
           function evaluateOptions(scope) {
             var options = {};
@@ -419,6 +369,60 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
             return options;
           }
 
+          if (attrs.url)
+            scope.this_layer = new FeatureLayer(attrs.url, evaluateOptions(scope));
+          else
+            scope.this_layer = new FeatureLayer({ featureSet: null, layerDefinition: { "geometryType": "esriGeometryPolygon", "fields": [] } }, evaluateOptions(scope));
+
+          esriMap.addLayer(scope.this_layer, scope.index);
+
+          if (scope.layerId || scope.id) {
+            scope.this_layer.id = scope.scope.layerId || scope.id;
+            esriRegistry.set(scope.scope.layerId || scope.id, scope.this_layer);
+          }
+
+          if (scope.this_layer.loaded)
+            ready.resolve();
+          else
+            scope.this_layer.on("load", function (r) {
+              ready.resolve();
+            });
+
+          scope.isObjectReady.then(function () {
+
+            if (scope.editable)
+              try { scope.this_layer.setEditable(scope.editable); } catch (e) {
+                console.log("Setting Editing to Layer failed: " + e);
+              }
+
+            if (scope.onReady()) scope.onReady()(scope.this_layer);
+          });
+
+          //if (scope.onClick() || scope.showInfoWindowOnClick == true)
+          scope.this_layer.on("click", function (r) {
+            if (!scope.$$phase && !scope.$root.$$phase) {
+              scope.$apply(function () {
+                if (scope.onClick()) scope.onClick()(r);
+              });
+            } else {
+              if (scope.onClick()) scope.onClick()(r);
+            }
+
+            esriMap.getMap(function (rr) {
+              rr.infoWindow.hide();
+              rr.infoWindow.clearFeatures();
+              rr.infoWindow.setFeatures([r.graphic]);
+              if (scope.showInfoWindowOnClick == true)
+                $timeout(function () { rr.infoWindow.show(r.mapPoint); });
+            });
+          });
+
+          if (scope.onDblClick()) scope.this_layer.on("dbl-click", function (r) { scope.onDblClick()(r); });
+          if (scope.onBeforeApplyEdits()) scope.this_layer.on("before-apply-edits", function (r) { scope.onBeforeApplyEdits()(r); });
+          if (scope.onEditsComplete()) scope.this_layer.on("edits-complete", function (r) { scope.onEditsComplete()(r); });
+          if (scope.onGraphicAdd()) scope.this_layer.on("graphic-add", function (r) { scope.onGraphicAdd()(r); });
+          if (scope.onGraphicRemove()) scope.this_layer.on("graphic-remove", function (r) { scope.onGraphicRemove()(r); });
+
           scope.this_layer.on("selection-complete", function () {
             if (scope.zoomToSelection == true) {
               scope.isObjectReady.then(function () {
@@ -437,8 +441,8 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
 
         scope.$on("$destroy", function () {
           scope.isObjectReady.then(function () {
-            if (scope.id && esriRegistry.get(scope.id) === scope.this_layer)
-              esriRegistry.remove(scope.id);
+            if ((scope.layerId || scope.id) && esriRegistry.get(scope.layerId || scope.id) === scope.this_layer)
+              esriRegistry.remove(scope.layerId || scope.id);
             esriMap.removeLayer(scope.this_layer);
           });
         });
@@ -488,6 +492,7 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
     require: "^esriMap",
     scope: {
       id: "@",
+      layerId: "@",
       visible: "=",
       onClick: "&",
       index: "@"
@@ -501,9 +506,9 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
         require(["esri/layers/GraphicsLayer"], function (GraphicsLayer) {
           scope.this_layer = new GraphicsLayer();
           esriMap.addLayer(scope.this_layer, scope.index);
-          if (scope.id) {
-            scope.this_layer.id = scope.id;
-            esriRegistry.set(scope.id, scope.this_layer);
+          if (scope.layerId || scope.id) {
+            scope.this_layer.id = scope.scope.layerId || scope.id;
+            esriRegistry.set(scope.scope.layerId || scope.id, scope.this_layer);
           }
           ready.resolve();
 
@@ -520,7 +525,7 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
         });
         scope.$on("$destroy", function () {
           scope.isObjectReady.then(function () {
-            if (scope.id && esriRegistry.get(scope.id) === scope.this_layer) esriRegistry.remove(scope.id);
+            if ((scope.layerId || scope.id) && esriRegistry.get(scope.layerId || scope.id) === scope.this_layer) esriRegistry.remove(scope.layerId || scope.id);
             esriMap.removeLayer(scope.this_layer);
           });
         });
