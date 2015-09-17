@@ -68,3 +68,5 @@ as follow
 ## modules.list file
 The module.list file contains a list of modules that teamdev.esri uses. 
 You can use module.list to create a custom build of esri javascript api using http://jso.arcgis.com/ service
+
+## Licensed under Apache License v.2
