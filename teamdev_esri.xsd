@@ -100,7 +100,7 @@
     <xs:attribute name="on-ready" type="xs:string" use="optional" />
     <xs:attribute name="index" type="xs:string" use="optional" />
     <xs:attribute name="show-info-window-on-click" type="xs:string" use="optional" />
-    <xs:attribute name="editable" type="xs:boolean" use="optional" />
+    <xs:attribute name="editable" type="xs:string" use="optional" />
     <xs:attribute name="on-dbl-click" type="xs:string" use="optional" />
     <xs:attribute name="on-before-apply-edits" type="xs:string" use="optional" />
     <xs:attribute name="on-edits-complete" type="xs:string" use="optional" />
@@ -133,15 +133,15 @@
   <xs:complexType>
     <xs:attribute name="editor-div" type="xs:string" use="required" />
     <xs:attribute name="id" type="xs:string" use="required" />
-    <xs:attribute name="enable-snapping" type="xs:boolean" use="optional" />
-    <xs:attribute name="toolbar-visible" type="xs:boolean" use="optional" />
+    <xs:attribute name="enable-snapping" type="xs:string" use="optional" />
+    <xs:attribute name="toolbar-visible" type="xs:string" use="optional" />
     <xs:attribute name="max-undo-redo-operations" type="xs:string" use="optional" />
     <xs:attribute name="geometry-service" type="xs:string" use="optional" />
-    <xs:attribute name="enable-undo-redo" type="xs:boolean" use="optional" />
-    <xs:attribute name="disable-attribute-update" type="xs:boolean" use="optional" />
-    <xs:attribute name="disable-geometry-update" type="xs:boolean" use="optional" />
+    <xs:attribute name="enable-undo-redo" type="xs:string" use="optional" />
+    <xs:attribute name="disable-attribute-update" type="xs:string" use="optional" />
+    <xs:attribute name="disable-geometry-update" type="xs:string" use="optional" />
   </xs:complexType>
-</xs>
+</xs:element>
 
 <xs:element name="label-layer" >
   <xs:complexType >
