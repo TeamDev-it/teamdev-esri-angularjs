@@ -24,6 +24,7 @@
     <xs:attribute name="base-map" use="required" >
       <xs:simpleType>
         <xs:restriction base="xsd:NMTOKEN">
+          <xs:enumeration value="none"></xs:enumeration>
           <xs:enumeration value="streets"></xs:enumeration>
           <xs:enumeration value="satellite"></xs:enumeration>
           <xs:enumeration value="hybrid"></xs:enumeration>

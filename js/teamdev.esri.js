@@ -136,13 +136,13 @@ m.directive("esriMap", function ($q, esriRegistry) {
       require(["esri/map", "esri/arcgis/utils", "esri/IdentityManager", "dojo/on", "dojo/touch", "esri/geometry/Extent", "dojo/domReady"], function (Map, arcgisUtils, esriIm, on, touch, Extent) {
 
         var options = {
-          basemap: "gray",
+          //basemap: "gray",
           autoResize: false,
         };
 
         if (scope.autoresize) options.autoResize = scope.autoresize;
         if (scope.mapcenter) options.center = scope.mapcenter;
-        if (scope.mapbase) options.basemap = scope.mapbase;
+        if (scope.mapbase && scope.mapbase !== "none") options.basemap = scope.mapbase;
         if (scope.mapzoom) options.zoom = scope.mapzoom;
         if (scope.scale) options.scale = scope.scale;
 
