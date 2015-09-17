@@ -321,12 +321,18 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
       url: "@",
       visible: "=",
       onClick: "&",
+      onDblClick: "&",
       outFields: "@",
       zoomToSelection: "@",
       mode: "@",
       onReady: "&",
       index: "@",
-      showInfoWindowOnClick: "="
+      showInfoWindowOnClick: "=",
+      onBeforeApplyEdits: "&",
+      onEditsComplete: "&",
+      onGraphicAdd: "&",
+      onGraphicRemove: "&",
+      editable : "@",
     },
     link: {
       pre: function (scope, element, attrs, esriMap) {
@@ -355,6 +361,12 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
             });
 
           scope.isObjectReady.then(function () {
+
+            if (scope.editable)
+              try { scope.this_layer.setEditable(scope.editable); } catch (e) {
+                console.log("Setting Editing to Layer failed: " + e);
+              }
+
             if (scope.onReady()) scope.onReady()(scope.this_layer);
           });
 
@@ -363,6 +375,8 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
             if (!scope.$$phase && !scope.$root.$$phase) scope.$apply(function () {
               if (scope.onClick()) scope.onClick()(r);
             });
+            else
+              if (scope.onClick()) scope.onClick()(r);
 
             esriMap.getMap(function (rr) {
               rr.infoWindow.hide();
@@ -371,8 +385,14 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
               if (scope.showInfoWindowOnClick == true)
                 $timeout(function () { rr.infoWindow.show(r.mapPoint); });
             });
-
           });
+
+          if (scope.onDblClick()) scope.this_layer.on("dbl-click", function (r) { scope.onDblClick()(r); });
+          if (scope.onBeforeApplyEdits()) scope.this_layer.on("before-apply-edits", function (r) { scope.onBeforeApplyEdits()(r); });
+          if (scope.onEditsComplete()) scope.this_layer.on("edits-complete", function (r) { scope.onEditsComplete()(r); });
+          if (scope.onGraphicAdd()) scope.this_layer.on("graphic-add", function (r) { scope.onGraphicAdd()(r); });
+          if (scope.onGraphicRemove()) scope.this_layer.on("graphic-remove", function (r) { scope.onGraphicRemove()(r); });
+
           function evaluateOptions(scope) {
             var options = {};
 

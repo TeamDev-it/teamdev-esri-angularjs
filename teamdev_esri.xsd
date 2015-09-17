@@ -100,6 +100,12 @@
     <xs:attribute name="on-ready" type="xs:string" use="optional" />
     <xs:attribute name="index" type="xs:string" use="optional" />
     <xs:attribute name="show-info-window-on-click" type="xs:string" use="optional" />
+    <xs:attribute name="editable" type="xs:boolean" use="optional" />
+    <xs:attribute name="on-dbl-click" type="xs:string" use="optional" />
+    <xs:attribute name="on-before-apply-edits" type="xs:string" use="optional" />
+    <xs:attribute name="on-edits-complete" type="xs:string" use="optional" />
+    <xs:attribute name="on-graphic-add" type="xs:string" use="optional" />
+    <xs:attribute name="on-graphic-remove" type="xs:string" use="optional" />
   </xs:complexType>
   </xs:element>
   
