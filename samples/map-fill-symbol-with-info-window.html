@@ -23,8 +23,16 @@
 </head>
 <!-- REMEMBER : Its an AngularJS Extension, so you need to declare an ng-app or you need to use our default app "MapApp"-->
 <body ng-app="MapApp" ng-controller="defaultController">
-  <esri-map map-id="map" base-map="gray" zoom="6" map-center="[-96.541, 38.34]">
-    <feature-layer url="http://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer/2" mode="MODE_ONDEMAND" id="layer1" out-fields="*">
+  <esri-map map-id="map" base-map="gray" zoom="5" map-center="[-96.541, 38.34]">
+    <feature-layer url="http://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer/2" 
+                   mode="MODE_ONDEMAND" layer-id="layer1" out-fields="*" show-info-window-on-click="true">
+      <simple-fill-symbol symbol-color="rgba(255,0,0,0.4)" symbol-style="STYLE_SOLID"></simple-fill-symbol>
+      <info-window title="my Info Window">
+        <div>
+          <h3>{{$g.attributes.state_name}}</h3>
+          <p>{{$g.attributes.sub_region}} {{$g.attributes.state_abbr}}</p>
+        </div>
+      </info-window>
     </feature-layer>
   </esri-map>
 </body>

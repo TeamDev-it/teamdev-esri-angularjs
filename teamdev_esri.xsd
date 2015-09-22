@@ -10,17 +10,17 @@
 			vs:cssschema="CSS 2.1"
 			vs:SuccinctFriendlyName="HTML5"
 			vs:customattrprefix="data-">
-      
-  <xs:element name="esri-map" type="mapType"/>
+
+  <xs:element name="esri-map" type="mapType" vs:disallowshorthand="true" vs:structural="true" vs:block="true"/>
   <xs:complexType name="mapType" >
-     <xs:choice  minOccurs="0" maxOccurs="unbounded">
+    <xs:choice  minOccurs="0" maxOccurs="unbounded">
       <xs:element ref="feature-layer"></xs:element>
       <xs:element ref="graphics-layer" ></xs:element>
       <xs:element ref="label-layer" ></xs:element>
       <xs:element ref="search" ></xs:element>
       <xs:element ref="info-window" ></xs:element>
       <xs:element ref="editor" ></xs:element>
-      </xs:choice>
+    </xs:choice>
     <xs:attribute name="base-map" use="required" >
       <xs:simpleType>
         <xs:restriction base="xsd:NMTOKEN">
@@ -65,284 +65,311 @@
     <xs:attribute name="disable-scroll-zoom" type="xs:string" use="optional" />
 
   </xs:complexType>
-  
-<xs:element name="feature-layer">
-  <xs:complexType >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      <xs:element ref="label-layer"></xs:element>
-      <xs:element ref="poly-line"></xs:element>
-      <xs:element ref="point" ></xs:element>
-      <xs:element ref="circle" ></xs:element>
-      <xs:element ref="tooltip" ></xs:element>
-      <xs:element ref="info-window" ></xs:element>
-      <xs:element ref="unique-value-renderer" ></xs:element>
-      <xs:element ref="picture-marker-symbol" ></xs:element>
-      <xs:element ref="simple-fill-symbol" ></xs:element>
-      <xs:element ref="simple-text-symbol" ></xs:element>
-      <xs:element ref="simple-marker-symbol" ></xs:element>
-      <xs:element ref="simple-line-symbol" ></xs:element>
-    </xs:choice>
-    <xs:attribute name="layer-id" type="xs:string" use="required" />
-    <xs:attribute name="url" type="xs:string" use="optional" />
-    <xs:attribute name="visible" type="xs:string" use="optional" />
-    <xs:attribute name="on-click" type="xs:string" use="optional" />
-    <xs:attribute name="out-fields" type="xs:string" use="optional" />
-    <xs:attribute name="zoom-to-selection" type="xs:string" use="optional" />
-    <xs:attribute name="mode" use="required" >
-      <xs:simpleType>
-        <xs:restriction base="xsd:NMTOKEN">
-          <xs:enumeration value="MODE_SNAPSHOT"/>
-          <xs:enumeration value="MODE_ONDEMAND"/>
-          <xs:enumeration value="MODE_SELECTION"/>
-          <xs:enumeration value="MODE_AUTO"/>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="on-ready" type="xs:string" use="optional" />
-    <xs:attribute name="index" type="xs:string" use="optional" />
-    <xs:attribute name="show-info-window-on-click" type="xs:string" use="optional" />
-    <xs:attribute name="editable" type="xs:string" use="optional" />
-    <xs:attribute name="on-dbl-click" type="xs:string" use="optional" />
-    <xs:attribute name="on-before-apply-edits" type="xs:string" use="optional" />
-    <xs:attribute name="on-edits-complete" type="xs:string" use="optional" />
-    <xs:attribute name="on-graphic-add" type="xs:string" use="optional" />
-    <xs:attribute name="on-graphic-remove" type="xs:string" use="optional" />
-  </xs:complexType>
-  </xs:element>
-  
-<xs:element name="graphics-layer" >
-  <xs:complexType >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      <xs:element ref="poly-line"></xs:element>
-      <xs:element ref="point" ></xs:element>
-      <xs:element ref="circle" ></xs:element>
-      <xs:element ref="info-window" ></xs:element>
-      <xs:element ref="picture-marker-symbol" ></xs:element>
-      <xs:element ref="simple-fill-symbol" ></xs:element>
-      <xs:element ref="simple-text-symbol" ></xs:element>
-      <xs:element ref="simple-marker-symbol" ></xs:element>
-      <xs:element ref="simple-line-symbol" ></xs:element>
-    </xs:choice>
-    <xs:attribute name="layer-id" type="xs:string" use="required" />
-    <xs:attribute name="visible" type="xs:string" use="optional" />
-    <xs:attribute name="on-click" type="xs:string" use="optional" />
-    <xs:attribute name="index" type="xs:string" use="optional" />
-  </xs:complexType>
+
+  <xs:element name="feature-layer" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="label-layer"></xs:element>
+        <xs:element ref="poly-line"></xs:element>
+        <xs:element ref="point" ></xs:element>
+        <xs:element ref="circle" ></xs:element>
+        <xs:element ref="tooltip" ></xs:element>
+        <xs:element ref="info-window" ></xs:element>
+        <xs:element ref="unique-value-renderer" ></xs:element>
+        <xs:element ref="picture-marker-symbol" ></xs:element>
+        <xs:element ref="simple-fill-symbol" ></xs:element>
+        <xs:element ref="simple-text-symbol" ></xs:element>
+        <xs:element ref="simple-marker-symbol" ></xs:element>
+        <xs:element ref="simple-line-symbol" ></xs:element>
+      </xs:choice>
+      <xs:attribute name="layer-id" type="xs:string" use="required" />
+      <xs:attribute name="url" type="xs:string" use="optional" />
+      <xs:attribute name="visible" type="xs:string" use="optional" />
+      <xs:attribute name="on-click" type="xs:string" use="optional" />
+      <xs:attribute name="out-fields" type="xs:string" use="optional" />
+      <xs:attribute name="zoom-to-selection" type="xs:string" use="optional" />
+      <xs:attribute name="mode" use="required" >
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN">
+            <xs:enumeration value="MODE_SNAPSHOT"/>
+            <xs:enumeration value="MODE_ONDEMAND"/>
+            <xs:enumeration value="MODE_SELECTION"/>
+            <xs:enumeration value="MODE_AUTO"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="on-ready" type="xs:string" use="optional" />
+      <xs:attribute name="index" type="xs:string" use="optional" />
+      <xs:attribute name="show-info-window-on-click" type="xs:string" use="optional" />
+      <xs:attribute name="editable" type="xs:string" use="optional" />
+      <xs:attribute name="on-dbl-click" type="xs:string" use="optional" />
+      <xs:attribute name="on-before-apply-edits" type="xs:string" use="optional" />
+      <xs:attribute name="on-edits-complete" type="xs:string" use="optional" />
+      <xs:attribute name="on-graphic-add" type="xs:string" use="optional" />
+      <xs:attribute name="on-graphic-remove" type="xs:string" use="optional" />
+    </xs:complexType>
   </xs:element>
 
-<xs:element name="editor">
-  <xs:complexType>
-    <xs:attribute name="editor-div" type="xs:string" use="required" />
-    <xs:attribute name="id" type="xs:string" use="required" />
-    <xs:attribute name="enable-snapping" type="xs:string" use="optional" />
-    <xs:attribute name="toolbar-visible" type="xs:string" use="optional" />
-    <xs:attribute name="max-undo-redo-operations" type="xs:string" use="optional" />
-    <xs:attribute name="geometry-service" type="xs:string" use="optional" />
-    <xs:attribute name="enable-undo-redo" type="xs:string" use="optional" />
-    <xs:attribute name="disable-attribute-update" type="xs:string" use="optional" />
-    <xs:attribute name="disable-geometry-update" type="xs:string" use="optional" />
-  </xs:complexType>
-</xs:element>
-
-<xs:element name="label-layer" >
-  <xs:complexType >
-    <xs:attribute name="id" type="xs:string" use="required" />
-    <xs:attribute name="visible" type="xs:string" use="optional" />
-    <xs:attribute name="on-click" type="xs:string" use="optional" />
-    <xs:attribute name="index" type="xs:string" use="optional" />
-  </xs:complexType>
+  <xs:element name="graphics-layer" vs:disallowshorthand="true" vs:structural="true" vs:block="true" >
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="poly-line"></xs:element>
+        <xs:element ref="point" ></xs:element>
+        <xs:element ref="circle" ></xs:element>
+        <xs:element ref="info-window" ></xs:element>
+        <xs:element ref="picture-marker-symbol" ></xs:element>
+        <xs:element ref="simple-fill-symbol" ></xs:element>
+        <xs:element ref="simple-text-symbol" ></xs:element>
+        <xs:element ref="simple-marker-symbol" ></xs:element>
+        <xs:element ref="simple-line-symbol" ></xs:element>
+      </xs:choice>
+      <xs:attribute name="layer-id" type="xs:string" use="required" />
+      <xs:attribute name="visible" type="xs:string" use="optional" />
+      <xs:attribute name="on-click" type="xs:string" use="optional" />
+      <xs:attribute name="index" type="xs:string" use="optional" />
+    </xs:complexType>
   </xs:element>
-  
-  <xs:element name="search">
-  <xs:complexType >
-    <xs:attribute name="id" type="xs:string" use="required" />
-    <xs:attribute name="target" type="xs:string" use="optional" />
-  </xs:complexType>
+
+  <xs:element name="editor" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType>
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="edit-tool"></xs:element>
+      </xs:choice>
+      <xs:attribute name="editor-div" type="xs:string" use="required" />
+      <xs:attribute name="id" type="xs:string" use="required" />
+      <xs:attribute name="enable-snapping" type="xs:string" use="optional" />
+      <xs:attribute name="toolbar-visible" type="xs:string" use="optional" />
+      <xs:attribute name="max-undo-redo-operations" type="xs:string" use="optional" />
+      <xs:attribute name="geometry-service" type="xs:string" use="optional" />
+      <xs:attribute name="enable-undo-redo" type="xs:string" use="optional" />
+      <xs:attribute name="disable-attribute-update" type="xs:string" use="optional" />
+      <xs:attribute name="disable-geometry-update" type="xs:string" use="optional" />
+    </xs:complexType>
   </xs:element>
-  
 
-<xs:element name="poly-line">
-  <xs:complexType >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      <xs:element ref="simple-fill-symbol"></xs:element>
-      <xs:element ref="simple-line-symbol"></xs:element>
-    </xs:choice>
-    <xs:attribute name="json" type="xs:string" use="required" />
-  </xs:complexType>
-</xs:element>
+  <xs:element name="edit-tool">
+    <xs:complexType>
+      <xs:attribute name="type"  use="required">
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN" >
+            <xs:enumeration value="CREATE_TOOL_ARROW"></xs:enumeration>
+            <xs:enumeration value="CREATE_TOOL_AUTOCOMPLETE"></xs:enumeration>
+            <xs:enumeration value="CREATE_TOOL_CIRCLE"></xs:enumeration>
+            <xs:enumeration value="CREATE_TOOL_ELLIPSE"></xs:enumeration>
+            <xs:enumeration value="CREATE_TOOL_FREEHAND_POLYGON"></xs:enumeration>
+            <xs:enumeration value="CREATE_TOOL_FREEHAND_POLYLINE"></xs:enumeration>
+            <xs:enumeration value="CREATE_TOOL_POLYGON"></xs:enumeration>
+            <xs:enumeration value="CREATE_TOOL_POLYLINE"></xs:enumeration>
+            <xs:enumeration value="CREATE_TOOL_RECTANGLE"></xs:enumeration>
+            <xs:enumeration value="CREATE_TOOL_TRIANGLE"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
 
-<xs:element name="point">
-  <xs:complexType >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      <xs:element ref="picture-marker-symbol" ></xs:element>
-      <xs:element ref="simple-fill-symbol" ></xs:element>
-      <xs:element ref="simple-text-symbol" ></xs:element>
-      <xs:element ref="simple-marker-symbol" ></xs:element>
-      <xs:element ref="simple-line-symbol" ></xs:element>
-    </xs:choice>
-    <xs:attribute name="spatial-reference" type="xs:string" use="optional" />
-    <xs:attribute name="latitude" type="xs:string" use="optional" />
-    <xs:attribute name="longitude" type="xs:string" use="optional" />
-    <xs:attribute name="json" type="xs:string" use="optional" />
-    <xs:attribute name="extra" type="xs:string" use="optional" />
-    <xs:attribute name="geometry" type="xs:string" use="optional" />
-  </xs:complexType>
-</xs:element>
+  <xs:element name="label-layer" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:attribute name="id" type="xs:string" use="required" />
+      <xs:attribute name="visible" type="xs:string" use="optional" />
+      <xs:attribute name="on-click" type="xs:string" use="optional" />
+      <xs:attribute name="index" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
 
+  <xs:element name="search" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
 
-<xs:element name="circle">
-  <xs:complexType >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      <xs:element ref="simple-fill-symbol" ></xs:element>
-      <xs:element ref="simple-line-symbol" ></xs:element>
-    </xs:choice>
-    <xs:attribute name="spatial-reference" type="xs:string" use="optional" />
-    <xs:attribute name="latitude" type="xs:string" use="optional" />
-    <xs:attribute name="longitude" type="xs:string" use="optional" />
-    <xs:attribute name="radius" type="xs:string" use="optional" />
-    <xs:attribute name="extra" type="xs:string" use="optional" />
-    <xs:attribute name="geometry" type="xs:string" use="optional" />
-  </xs:complexType>
-</xs:element>
+      </xs:choice>
+      <xs:attribute name="id" type="xs:string" use="required" />
+      <xs:attribute name="target" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
 
 
-<xs:element name="tooltip">
-  <xs:complexType  >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      
-    </xs:choice>    
-  </xs:complexType>
-</xs:element>
+  <xs:element name="poly-line" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="simple-fill-symbol"></xs:element>
+        <xs:element ref="simple-line-symbol"></xs:element>
+      </xs:choice>
+      <xs:attribute name="json" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
 
-<xs:element name="info-window">
-  <xs:complexType >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      
-    </xs:choice>
-    <xs:attribute name="title-func" type="xs:string" use="optional" />
-  </xs:complexType>
-</xs:element>
+  <xs:element name="point" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="picture-marker-symbol" ></xs:element>
+        <xs:element ref="simple-fill-symbol" ></xs:element>
+        <xs:element ref="simple-text-symbol" ></xs:element>
+        <xs:element ref="simple-marker-symbol" ></xs:element>
+        <xs:element ref="simple-line-symbol" ></xs:element>
+      </xs:choice>
+      <xs:attribute name="spatial-reference" type="xs:string" use="optional" />
+      <xs:attribute name="latitude" type="xs:string" use="optional" />
+      <xs:attribute name="longitude" type="xs:string" use="optional" />
+      <xs:attribute name="json" type="xs:string" use="optional" />
+      <xs:attribute name="extra" type="xs:string" use="optional" />
+      <xs:attribute name="geometry" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
 
-<xs:element name="unique-value-renderer">
-  <xs:complexType >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      <xs:element ref="value-info"></xs:element>
-      <xs:element ref="picture-marker-symbol"></xs:element>
-    </xs:choice>
-    <xs:attribute name="field" type="xs:string" use="required" />
-  </xs:complexType>
-</xs:element>
 
-<xs:element name="value-info">
-  <xs:complexType >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      <xs:element ref="picture-marker-symbol"></xs:element>
-    </xs:choice>
-    <xs:attribute name="value" type="xs:string" use="required" />
-  </xs:complexType>
-</xs:element>
+  <xs:element name="circle" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="simple-fill-symbol" ></xs:element>
+        <xs:element ref="simple-line-symbol" ></xs:element>
+      </xs:choice>
+      <xs:attribute name="spatial-reference" type="xs:string" use="optional" />
+      <xs:attribute name="latitude" type="xs:string" use="optional" />
+      <xs:attribute name="longitude" type="xs:string" use="optional" />
+      <xs:attribute name="radius" type="xs:string" use="optional" />
+      <xs:attribute name="extra" type="xs:string" use="optional" />
+      <xs:attribute name="geometry" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
 
-<xs:element name="picture-marker-symbol">
-  <xs:complexType> 
-    <xs:attribute name="symbol-url" type="xs:string" use="optional" />
-    <xs:attribute name="symbol-width" type="xs:string" use="optional" />
-    <xs:attribute name="symbol-height" type="xs:string" use="optional" />
-  </xs:complexType>
-</xs:element>
 
-<xs:element name="simple-marker-symbol">
-  <xs:complexType >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      <xs:element ref="simple-line-symbol"></xs:element>
-    </xs:choice>
-    <xs:attribute name="json" type="xs:string" use="optional" />
-    <xs:attribute name="color" type="xs:string" use="optional" />
-  </xs:complexType>
-</xs:element>
+  <xs:element name="tooltip" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType  >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
 
-<xs:element name="simple-fill-symbol">
-  <xs:complexType >
-    <xs:choice  minOccurs="0" maxOccurs="unbounded">
-      <xs:element ref="simple-line-symbol"></xs:element>
-    </xs:choice>
-    <xs:attribute name="symbol-color" type="xs:string" use="required" />
-    <xs:attribute name="symbol-style" use="required" >
-      <xs:simpleType>
-        <xs:restriction base="xsd:NMTOKEN">
-          <xs:enumeration value="STYLE_BACKWARD_DIAGONAL"></xs:enumeration>
-          <xs:enumeration value="STYLE_CROSS"></xs:enumeration>
-          <xs:enumeration value="STYLE_DIAGONAL_CROSS"></xs:enumeration>
-          <xs:enumeration value="STYLE_FORWARD_DIAGONAL"></xs:enumeration>
-          <xs:enumeration value="STYLE_HORIZONTAL"></xs:enumeration>
-          <xs:enumeration value="STYLE_NULL"></xs:enumeration>
-          <xs:enumeration value="STYLE_SOLID"></xs:enumeration>
-          <xs:enumeration value="STYLE_VERTICAL"></xs:enumeration>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:complexType>
-</xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
 
-<xs:element name="simple-text-symbol">
-  <xs:complexType >
-    <xs:attribute name="text-color" type="xs:string" use="optional" />
-    <xs:attribute name="text" type="xs:string" use="optional" />
-    <xs:attribute name="font-size" type="xs:string" use="optional" />
-    <xs:attribute name="font-style" use="optional" >
-      <xs:simpleType>
-        <xs:restriction base="xsd:NMTOKEN">
-          <xs:enumeration value="STYLE_ITALIC"></xs:enumeration>
-          <xs:enumeration value="STYLE_OBLIQUE"></xs:enumeration>
-          <xs:enumeration value="STYLE_NORMAL"></xs:enumeration>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="font-variant" use="optional" >
-      <xs:simpleType>
-        <xs:restriction base="xsd:NMTOKEN">
-          <xs:enumeration value="VARIANT_NORMAL"></xs:enumeration>
-          <xs:enumeration value="VARIANT_SMALLCAPS"></xs:enumeration>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="font-weight" use="optional" >
-      <xs:simpleType>
-        <xs:restriction base="xsd:NMTOKEN">
-          <xs:enumeration value="WEIGHT_NORMAL"></xs:enumeration>
-          <xs:enumeration value="WEIGHT_BOLD"></xs:enumeration>
-          <xs:enumeration value="WEIGHT_BOLDER"></xs:enumeration>
-          <xs:enumeration value="WEIGHT_LIGHTER"></xs:enumeration>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="font-family" type="xs:string" use="optional" />
-    <xs:attribute name="x-offset" type="xs:string" use="optional" />
-    <xs:attribute name="y-offset" type="xs:string" use="optional" />
-  </xs:complexType>
-</xs:element>
+  <xs:element name="info-window" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
 
-<xs:element name="simple-line-symbol">
-  <xs:complexType  >
-    <xs:attribute name="symbol-color" type="xs:string" use="optional" />
-    <xs:attribute name="symbol-width" type="xs:string" use="optional" />
-    <xs:attribute name="symbol-style" use="optional" >
-      <xs:simpleType>
-        <xs:restriction base="xsd:NMTOKEN">
-          <xs:enumeration value="STYLE_DASH"></xs:enumeration>
-          <xs:enumeration value="STYLE_DASHDOT"></xs:enumeration>
-          <xs:enumeration value="STYLE_DASHDOTDOT"></xs:enumeration>
-          <xs:enumeration value="STYLE_DOT"></xs:enumeration>
-          <xs:enumeration value="STYLE_LONGDASHDOT"></xs:enumeration>
-          <xs:enumeration value="STYLE_NULL"></xs:enumeration>
-          <xs:enumeration value="STYLE_SOLID"></xs:enumeration>
-          <xs:enumeration value="STYLE_SHORTDASH"></xs:enumeration>
-          <xs:enumeration value="STYLE_SHORTDASHDOT"></xs:enumeration>
-          <xs:enumeration value="STYLE_SHORTDASHDOTDOT"></xs:enumeration>
-          <xs:enumeration value="STYLE_SHORTDOT"></xs:enumeration>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:complexType>
-</xs:element>
+      </xs:choice>
+      <xs:attribute name="title" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="unique-value-renderer" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="value-info"></xs:element>
+        <xs:element ref="picture-marker-symbol"></xs:element>
+      </xs:choice>
+      <xs:attribute name="field" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="value-info" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="picture-marker-symbol"></xs:element>
+      </xs:choice>
+      <xs:attribute name="value" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="picture-marker-symbol" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType>
+      <xs:attribute name="symbol-url" type="xs:string" use="optional" />
+      <xs:attribute name="symbol-width" type="xs:string" use="optional" />
+      <xs:attribute name="symbol-height" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="simple-marker-symbol" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="simple-line-symbol"></xs:element>
+      </xs:choice>
+      <xs:attribute name="json" type="xs:string" use="optional" />
+      <xs:attribute name="color" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="simple-fill-symbol" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="simple-line-symbol"></xs:element>
+      </xs:choice>
+      <xs:attribute name="symbol-color" type="xs:string" use="required" />
+      <xs:attribute name="symbol-style" use="required" >
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN">
+            <xs:enumeration value="STYLE_BACKWARD_DIAGONAL"></xs:enumeration>
+            <xs:enumeration value="STYLE_CROSS"></xs:enumeration>
+            <xs:enumeration value="STYLE_DIAGONAL_CROSS"></xs:enumeration>
+            <xs:enumeration value="STYLE_FORWARD_DIAGONAL"></xs:enumeration>
+            <xs:enumeration value="STYLE_HORIZONTAL"></xs:enumeration>
+            <xs:enumeration value="STYLE_NULL"></xs:enumeration>
+            <xs:enumeration value="STYLE_SOLID"></xs:enumeration>
+            <xs:enumeration value="STYLE_VERTICAL"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="simple-text-symbol" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType >
+      <xs:attribute name="text-color" type="xs:string" use="optional" />
+      <xs:attribute name="text" type="xs:string" use="optional" />
+      <xs:attribute name="font-size" type="xs:string" use="optional" />
+      <xs:attribute name="font-style" use="optional" >
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN">
+            <xs:enumeration value="STYLE_ITALIC"></xs:enumeration>
+            <xs:enumeration value="STYLE_OBLIQUE"></xs:enumeration>
+            <xs:enumeration value="STYLE_NORMAL"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="font-variant" use="optional" >
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN">
+            <xs:enumeration value="VARIANT_NORMAL"></xs:enumeration>
+            <xs:enumeration value="VARIANT_SMALLCAPS"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="font-weight" use="optional" >
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN">
+            <xs:enumeration value="WEIGHT_NORMAL"></xs:enumeration>
+            <xs:enumeration value="WEIGHT_BOLD"></xs:enumeration>
+            <xs:enumeration value="WEIGHT_BOLDER"></xs:enumeration>
+            <xs:enumeration value="WEIGHT_LIGHTER"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="font-family" type="xs:string" use="optional" />
+      <xs:attribute name="x-offset" type="xs:string" use="optional" />
+      <xs:attribute name="y-offset" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="simple-line-symbol" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
+    <xs:complexType  >
+      <xs:attribute name="symbol-color" type="xs:string" use="optional" />
+      <xs:attribute name="symbol-width" type="xs:string" use="optional" />
+      <xs:attribute name="symbol-style" use="optional" >
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN">
+            <xs:enumeration value="STYLE_DASH"></xs:enumeration>
+            <xs:enumeration value="STYLE_DASHDOT"></xs:enumeration>
+            <xs:enumeration value="STYLE_DASHDOTDOT"></xs:enumeration>
+            <xs:enumeration value="STYLE_DOT"></xs:enumeration>
+            <xs:enumeration value="STYLE_LONGDASHDOT"></xs:enumeration>
+            <xs:enumeration value="STYLE_NULL"></xs:enumeration>
+            <xs:enumeration value="STYLE_SOLID"></xs:enumeration>
+            <xs:enumeration value="STYLE_SHORTDASH"></xs:enumeration>
+            <xs:enumeration value="STYLE_SHORTDASHDOT"></xs:enumeration>
+            <xs:enumeration value="STYLE_SHORTDASHDOTDOT"></xs:enumeration>
+            <xs:enumeration value="STYLE_SHORTDOT"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
 
 </xs:schema>

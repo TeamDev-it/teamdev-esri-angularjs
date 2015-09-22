@@ -377,8 +377,8 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
           esriMap.addLayer(scope.this_layer, scope.index);
 
           if (scope.layerId || scope.id) {
-            scope.this_layer.id = scope.scope.layerId || scope.id;
-            esriRegistry.set(scope.scope.layerId || scope.id, scope.this_layer);
+            scope.this_layer._layer_id = scope.layerId || scope.id;
+            esriRegistry.set(scope.layerId || scope.id, scope.this_layer);
           }
 
           if (scope.this_layer.loaded)
@@ -390,8 +390,8 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
 
           scope.isObjectReady.then(function () {
 
-            if (scope.editable)
-              try { scope.this_layer.setEditable(scope.editable); } catch (e) {
+            if (scope.editable === "true")
+              try { scope.this_layer.setEditable(true); } catch (e) {
                 console.log("Setting Editing to Layer failed: " + e);
               }
 
@@ -507,8 +507,8 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
           scope.this_layer = new GraphicsLayer();
           esriMap.addLayer(scope.this_layer, scope.index);
           if (scope.layerId || scope.id) {
-            scope.this_layer.id = scope.scope.layerId || scope.id;
-            esriRegistry.set(scope.scope.layerId || scope.id, scope.this_layer);
+            scope.this_layer._layer_id = scope.layerId || scope.id;
+            esriRegistry.set(scope.layerId || scope.id, scope.this_layer);
           }
           ready.resolve();
 
@@ -581,6 +581,12 @@ m.directive("editor", function ($q) {
       disableGeometryUpdate: "@",
       enableSnappingMessage: "@",
     },
+    controller: function ($scope) {
+      $scope.toolTypes = [];
+      this.addTool = function (toolType) {
+        $scope.toolTypes.push(toolType);
+      };
+    },
     link: function (scope, element, attr, parents) {
       var ready = $q.defer();
       scope.isObjectReady = ready.promise;
@@ -598,18 +604,36 @@ m.directive("editor", function ($q) {
                 });
             }
 
-            var editor = new Editor({
-              settings: {
-                layerInfos: featureLayerInfos,
-                map: m,
-                toolbarVisible: scope.toolbarVisible || false,
-                maxUndoRedoOperations: scope.maxUndoRedoOperations || 5,
-                geometryService: scope.geometryService,
-                enableUndoRedo: scope.enableUndoRedo || false,
-                disableAttributeUpdate: scope.disableAttributeUpdate || false,
-                disableGeometryUpdate: scope.disableGeometryUpdate || false,
+            var settings = {
+              layerInfos: featureLayerInfos,
+              map: m,
+              toolbarVisible: scope.toolbarVisible  === "true",
+              maxUndoRedoOperations: scope.maxUndoRedoOperations || 5,
+              geometryService: scope.geometryService,
+              enableUndoRedo: scope.enableUndoRedo === "true",
+              disableAttributeUpdate: scope.disableAttributeUpdate === "true",
+              disableGeometryUpdate: scope.disableGeometryUpdate === "true",
+              polygonDrawTools: [],
+              polylineDrawTools: []
+            };
+
+            for (var i in scope.toolTypes) {
+              switch (scope.toolTypes[i]) {
+                case "CREATE_TOOL_ARROW": settings.polylineDrawTools.push(Editor.CREATE_TOOL_ARROW); break;
+                case "CREATE_TOOL_AUTOCOMPLETE": settings.polygonDrawTools.push(Editor.CREATE_TOOL_AUTOCOMPLETE); break;
+                case "CREATE_TOOL_CIRCLE": settings.polygonDrawTools.push(Editor.CREATE_TOOL_CIRCLE); break;
+                case "CREATE_TOOL_ELLIPSE": settings.polygonDrawTools.push(Editor.CREATE_TOOL_ELLIPSE); break;
+                case "CREATE_TOOL_FREEHAND_POLYGON": settings.polygonDrawTools.push(Editor.CREATE_TOOL_FREEHAND_POLYGON); break;
+                case "CREATE_TOOL_FREEHAND_POLYLINE": settings.polylineDrawTools.push(Editor.CREATE_TOOL_FREEHAND_POLYLINE); break;
+                case "CREATE_TOOL_POLYGON": settings.polygonDrawTools.push(Editor.CREATE_TOOL_POLYGON); break;
+                case "CREATE_TOOL_POLYLINE": settings.polylineDrawTools.push(Editor.CREATE_TOOL_POLYLINE); break;
+                case "CREATE_TOOL_RECTANGLE": settings.polygonDrawTools.push(Editor.CREATE_TOOL_RECTANGLE); break;
+                case "CREATE_TOOL_TRIANGLE": settings.polygonDrawTools.push(Editor.CREATE_TOOL_TRIANGLE); break;
+                default:
               }
-            }, scope.editorDiv);
+            }
+
+            var editor = new Editor({ settings: settings }, scope.editorDiv);
             editor.startup();
 
             i18n.toolbars.draw.start += scope.enableSnappingMessage || "<br/>Press <b>CTRL</b> to enable snapping";
@@ -619,6 +643,19 @@ m.directive("editor", function ($q) {
               map.enableSnapping();
           });
       });
+    }
+  };
+});
+
+m.directive("editTool", function ($q) {
+  return {
+    restrict: "E",
+    require: ["^editor"],
+    scope: {
+      type: "@"
+    },
+    link: function (scope, element, attr, parents) {
+      parents[0].addTool(scope.type);
     }
   };
 });
@@ -831,7 +868,7 @@ m.directive("search", function ($q, esriRegistry) {
             scope.this_layer.startup();
 
             if (scope.id) {
-              scope.this_layer.id = scope.id;
+              scope.this_layer._layer_id = scope.id;
               esriRegistry.set(scope.id, scope.this_layer);
             }
             ready.resolve();
@@ -966,14 +1003,13 @@ m.directive("infoWindow", function ($q, $compile, $timeout) {
     replace: false,
     transclude: true,
     scope: {
-      titleFunc: "&",
+      title: "@",
     },
     link: function (scope, element, attr, parents, transclude) {
       element.css("display", "none");
       var parent = parents[0] || parents[1] || parents[2];
       var transclusionScope;
-      var title = attr.title;
-      if (scope.titleFunc() instanceof Function) title = scope.titleFunc();
+      var title = scope.title;
 
       transclude(function (clone, ss) {
         parent.setInfoWindow(title, clone[1]);

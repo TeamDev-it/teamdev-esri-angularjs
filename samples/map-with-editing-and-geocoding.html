@@ -1,0 +1,69 @@
+﻿<html>
+<head>
+  <title>Base Map Sample</title>
+  <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+  <link href="../css/teamdev.esri.css" rel="stylesheet" />
+  <script src="http://js.arcgis.com/3.14/"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+  <script src="../js/teamdev.esri.js"></script>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .map {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .mapContainer {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      width: 70%;
+    }
+
+    #myEditorPane {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 30%;
+      padding-bottom:20px;
+    }
+
+    .templatePicker.esriTemplatePicker {
+      height:100%;
+    }
+
+    #finder {
+      position:absolute;
+      top:10px;
+      right:10px;
+      z-index:20;
+    }
+  </style>
+</head>
+<!-- REMEMBER : Its an AngularJS Extension, so you need to declare an ng-app or you need to use our default app "MapApp"-->
+<body ng-app="MapApp">
+  <div class="mapContainer">
+    <div id="finder"></div>
+    <esri-map map-id="map" base-map="gray" zoom="5" map-center="[12.4036841,42.9141749]">
+      <search id="finder" target="finder" ></search>
+      <editor editor-div="myEditorPane" enable-snapping="true" id="mapEditor" disable-attribute-update="false"></editor>
+      <feature-layer url="http://sampleserver5.arcgisonline.com/ArcGIS/rest/services/Energy/HSEC/FeatureServer/2" mode="MODE_ONDEMAND" layer-id="layer1" out-fields="*">
+        <info-window>
+          
+        </info-window>
+      </feature-layer>
+    </esri-map>
+  </div>
+  <div id="myEditorPane"></div>
+  
+</body>
+</html>
