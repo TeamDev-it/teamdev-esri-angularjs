@@ -171,30 +171,23 @@ m.directive("esriMap", function ($q, esriRegistry) {
         if (scope.webmapid) {
           arcgisUtils.createMap(scope.webmapid, scope.mapid, { mapOptions: options }).then(function (result) {
             scope.esri_map = result.map;
-            prepared.resolve();
+            if (scope.esri_map.loaded) {
+              prepared.resolve();    
+            } else{
+              scope.esri_map.on("load", function () {   prepared.resolve();});
+            } 
           });
         }
         else {
           scope.esri_map = new Map(scope.mapid, options);
-          prepared.resolve();
+          scope.esri_map.on("load", function () {   prepared.resolve();});
         }
 
         prepared.promise.then(function () {
           esriRegistry.set(scope.mapid, scope.esri_map);
-          if (scope.esri_map.loaded) {
-            //scope.esri_map.resize();
             if (scope.disableScrollZoom)
               scope.esri_map.disableScrollWheelZoom();
             if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);
-          }
-          else {
-            scope.esri_map.on("load", function () {
-              //scope.esri_map.resize();
-              if (scope.disableScrollZoom)
-                scope.esri_map.disableScrollWheelZoom();
-              if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);
-            });
-          }
           scope.esri_map.on("click", function (p) {
             if (scope.onClick())
               scope.onClick()(p);
@@ -288,6 +281,7 @@ m.directive("esriMap", function ($q, esriRegistry) {
         $scope.isObjectReady.then(function () {
           $scope.esri_map.addLayer(l);
         });
+        return $scope.isObjectReady;
       };
       this.removeLayer = function (l) {
         $scope.isObjectReady.then(function () {
@@ -374,19 +368,19 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
           else
             scope.this_layer = new FeatureLayer({ featureSet: null, layerDefinition: { "geometryType": "esriGeometryPolygon", "fields": [] } }, evaluateOptions(scope));
 
-          esriMap.addLayer(scope.this_layer, scope.index);
+          esriMap.addLayer(scope.this_layer, scope.index).then(function(){
+            if (scope.this_layer.loaded)
+              ready.resolve();
+            else
+              scope.this_layer.on("load", function (r) {
+                ready.resolve();
+              });            
+          });
 
           if (scope.layerId || scope.id) {
             scope.this_layer._layer_id = scope.layerId || scope.id;
             esriRegistry.set(scope.layerId || scope.id, scope.this_layer);
           }
-
-          if (scope.this_layer.loaded)
-            ready.resolve();
-          else
-            scope.this_layer.on("load", function (r) {
-              ready.resolve();
-            });
 
           scope.isObjectReady.then(function () {
 
@@ -433,7 +427,7 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
           });
 
         });
-        if (scope.visible) scope.$watch("visible", function (n, o) {
+        if (scope.visible !== 'undefined') scope.$watch("visible", function (n, o) {
           if (scope.this_layer && n !== o) {
             scope.this_layer.setVisibility(n);
           }
@@ -698,20 +692,89 @@ m.directive("polyLine", function ($q) {
     restrict: "E",
     require: ["?^graphicsLayer", "?^featureLayer"],
     scope: {
-      json: "="
+      json: "=", 
+      deepWatch: "@"
     },
     link: {
-      pre: function (scope, element, attrs, layers) {
+      post: function (scope, element, attrs, layers) {
         var ready = $q.defer();
         scope.isObjectReady = ready.promise;
         var layer = layers[0] || layers[1];
-        require(["esri/geometry/Polyline", "esri/graphic"], function (Polyline, Graphic) {
+        
+        var create = function (){
+          require(["esri/geometry/Polyline", "esri/graphic"], function (Polyline, Graphic) {
+            
+            if (scope.json)
+              if (scope.json instanceof Object && scope.json.type === "polyline")
+                scope.geometry = scope.json;
+              else
+                scope.geometry = new Polyline(scope.json);
+              if (scope.symbol) {
+                scope.graphic = new Graphic(scope.geometry, scope.symbol);
+                layer.add(scope.graphic);
+              }
+              else {
+                scope.graphic = new Graphic(scope.geometry);
+                layer.add(scope.graphic);
+              }
+              if (scope.extra) scope.graphic.extra = scope.extra;
+          });          
+        };
+        
+        create();
+        ready.resolve();
 
+        scope.$on("$destroy", function () { scope.isObjectReady.then(function () { layer.remove(scope.graphic); }); });
+        scope.$watch('json', function(newVal, oldVal)
+        {
+          if(scope.isObjectReady.$$state.status > 0)
+            scope.isObjectReady.then(function () {
+              layer.remove(scope.graphic);
+              create();
+            });
+        }, scope.deepWatch === "true");
+        
+      }
+    },
+    controller: function ($scope) {
+      this.setSymbol = function (val) {
+        $scope.symbol = val;
+        if(typeof($scope.isObjectReady) !== "undefined" && $scope.isObjectReady)
+        {
+          $scope.isObjectReady.then(function () {
+            $scope.graphic.setSymbol(val);
+            $scope.graphic.draw();
+          });
+        }
+      };
+    }
+  };
+});
+
+m.directive("polygon", function ($q) {
+  
+  return {
+    restrict: "E",
+    require: ["?^graphicsLayer", "?^featureLayer"],
+    scope: {
+      json: "=",
+      extra: "=", 
+      deepWatch: "@"
+    },
+    link: {
+      post: function(scope, element, attrs, layers) {
+        var ready = $q.defer();
+        scope.isObjectReady = ready.promise;
+        var layer = layers[0] || layers[1];
+        
+        var create = function(){
+        require(["esri/geometry/Polygon", "esri/graphic"], function (Polygon, Graphic) {
+          
           if (scope.json)
-            if (scope.json instanceof Object && scope.json.type === "polyline")
+            if (scope.json instanceof Object && scope.json.type === "polygon")
               scope.geometry = scope.json;
             else
-              scope.geometry = new Polyline(scope.json);
+              scope.geometry = new Polygon(scope.json);
           if (scope.symbol) {
             scope.graphic = new Graphic(scope.geometry, scope.symbol);
             layer.add(scope.graphic);
@@ -720,19 +783,38 @@ m.directive("polyLine", function ($q) {
             scope.graphic = new Graphic(scope.geometry);
             layer.add(scope.graphic);
           }
-          ready.resolve();
+          
+          if (scope.extra) scope.graphic.extra = scope.extra;
+          
         });
-
+        };
+        
+        create();
+        ready.resolve();
+        
         scope.$on("$destroy", function () { scope.isObjectReady.then(function () { layer.remove(scope.graphic); }); });
+        scope.$watch('json', function(newVal, oldVal)
+        {
+          if(scope.isObjectReady.$$state.status > 0)
+            scope.isObjectReady.then(function () {
+              layer.remove(scope.graphic);
+              create();
+            });
+        }, scope.deepWatch === "true");
+        
+        
       }
     },
     controller: function ($scope) {
       this.setSymbol = function (val) {
-        $scope.isObjectReady.then(function () {
-          $scope.symbol = val;
-          $scope.graphic.setSymbol(val);
-          $scope.graphic.draw();
-        });
+        $scope.symbol = val;
+        if(typeof($scope.isObjectReady) !== "undefined" && $scope.isObjectReady)
+        {
+          $scope.isObjectReady.then(function () {
+            $scope.graphic.setSymbol(val);
+            $scope.graphic.draw();
+          });
+        }
       };
     }
   };
@@ -1126,7 +1208,7 @@ m.directive("pictureMarkerSymbol", function ($q) {
 m.directive("simpleLineSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?^simpleFillSymbol", "?^simpleMarkerSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^simpleFillSymbol", "?^simpleMarkerSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
     scope: {
       symbolColor: "@"
     },
@@ -1160,7 +1242,7 @@ m.directive("simpleLineSymbol", function ($q) {
           Color.fromString(attr.symbolColor),
           attr.symbolWidth);
         ready.resolve();
-        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8]);
+        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9] || parents[10]);
         if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
 
         if (scope.symbolColor) scope.$watch("symbolColor", function (n, o) {
@@ -1181,7 +1263,7 @@ m.directive("simpleLineSymbol", function ($q) {
 m.directive("simpleFillSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
     link: {
       pre: function (scope, element, attr, parents) {
         var ready = $q.defer();
@@ -1210,8 +1292,15 @@ m.directive("simpleFillSymbol", function ($q) {
             scope.this_symbol.setColor(Color.fromString(attr.symbolColor));
 
           ready.resolve();
-          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7]);
+          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8]);
           if (ctrl) ctrl.setSymbol(scope.this_symbol);
+                
+          attr.$observe("symbolColor", function (n, o) {
+            if (n)
+              scope.this_symbol.setColor(Color.fromString(n));
+            if (ctrl)
+              ctrl.setSymbol(scope.this_symbol);
+          });
         });
       }
     },
