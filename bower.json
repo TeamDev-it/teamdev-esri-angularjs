@@ -1,6 +1,6 @@
 {
   "name": "teamdev.esri.angularjs",
-  "version": "0.40.21",
+  "version": "0.40.22",
   "authors": [
     "TeamDev <info@teamdev.it>", 
     "Paolo Possanzini<paolo@teamdev.it>",
@@ -16,7 +16,7 @@
     "esri",
     "maps"
   ],
-  "license": "MIT",
+  "license": "Apache License 2.0",
   "homepage": "www.teamdev.it",
   "ignore": [
     "**/.*",

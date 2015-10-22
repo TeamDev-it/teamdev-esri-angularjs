@@ -136,7 +136,6 @@ m.directive("esriMap", function ($q, esriRegistry) {
       require(["esri/map", "esri/arcgis/utils", "esri/IdentityManager", "dojo/on", "dojo/touch", "esri/geometry/Extent", "dojo/domReady"], function (Map, arcgisUtils, esriIm, on, touch, Extent) {
 
         var options = {
-          //basemap: "gray",
           autoResize: false,
         };
 
@@ -168,6 +167,12 @@ m.directive("esriMap", function ($q, esriRegistry) {
         if (scope.disableScrollZoom)
           options.smartNavigation = false;
 
+        
+        if (scope.hasBeenDestroyed)
+        {
+          prepared.reject();
+          return;
+        }
         if (scope.webmapid) {
           arcgisUtils.createMap(scope.webmapid, scope.mapid, { mapOptions: options }).then(function (result) {
             scope.esri_map = result.map;
@@ -184,6 +189,8 @@ m.directive("esriMap", function ($q, esriRegistry) {
         }
 
         prepared.promise.then(function () {
+          scope.esri_map.reposition();
+          scope.esri_map.resize(true);
           esriRegistry.set(scope.mapid, scope.esri_map);
             if (scope.disableScrollZoom)
               scope.esri_map.disableScrollWheelZoom();
@@ -235,6 +242,15 @@ m.directive("esriMap", function ($q, esriRegistry) {
     });
 
     createMap();
+    
+    scope.hasBeenDestroyed = false;
+    scope.$on("$destroy", function () {
+      scope.hasBeenDestroyed = true;
+      scope.isObjectReady.then(function () {
+        esriRegistry.remove(scope.mapid);
+        scope.esri_map.destroy();
+      });
+    });
   };
 
   function compiler($element, $attrs) {
