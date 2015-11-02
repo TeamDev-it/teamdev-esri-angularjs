@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+  <link href="bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+  <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="http://js.arcgis.com/3.14/"></script>
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="bower_components/angular/angular.min.js"></script>
+  <script src="bower_components/teamdev.esri.angularjs/js/teamdev.esri.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #search {
+      z-index: 100;
+      top: 10px;
+      right: 10px;
+      position: absolute;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    #editor {
+      position: absolute;
+      z-index: 1000;
+      width: 30vw;
+      left: 10px;
+      bottom: 10px;
+    }
+
+    .esriPopup .sizer {
+      min-width: 280px;
+      width: auto;
+    }
+
+    .esriPopup .contentPane {
+      max-width: initial;
+      max-height: initial;
+      height: auto;
+    }
+    image:hover {
+      width:75px;
+      height:75px;
+      margin-left:-25px;
+      margin-top:-25px;
+    }
+  </style>
+</head>
+<body ng-app="MapApp" ng-controller="myController">
+  <div id="search"></div>
+
+  <esri-map base-map="osm" map-id="map" map-center="[12.8, 42.9]" zoom="10" on-extent-change="extentChange">
+    <search target="search">
+    </search>
+
+    <graphics-layer layer-id="p">
+      <point ng-repeat="photo in photos" latitude="photo.latitude" longitude="photo.longitude" extra="photo">
+        <simple-text-symbol font-family="'FontAwesome'" font-size="24" text="&#xf030;">
+        </simple-text-symbol>
+        <picture-marker-symbol symbol-url="{{photo.url_t}}" symbol-height="25" symbol-width="25">
+        </picture-marker-symbol>
+      </point>
+      <info-window>
+        <div>
+          <h4>{{$g.extra.title}}</h4>
+          <img ng-src="{{$g.extra.url_l}}" height="400" />
+        </div>
+      </info-window>
+      
+    </graphics-layer>
+  </esri-map>
+
+  <script>
+    angular.module("MapApp")
+    .controller("myController", function ($scope, esriRegistry, $http) {
+
+      $scope.photos = [];
+      $scope.extentChange = function (e, map) {
+
+        require(["esri/geometry/webMercatorUtils"], function (uu) {
+          var r = uu.webMercatorToGeographic(e.extent.getCenter());
+          $http.get(" https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=5ca7c69a6a00372af493b84d56a8b63f&tags=%2A&privacy_filter=1&accuracy=1&content_type=1&lat=" + r.y + "&lon=" + r.x + "&radius=20&format=json&nojsoncallback=1&has_geo=1&extras=geo,url_l, url_t")
+          .success(function (p) {
+            $scope.photos = p.photos.photo;
+          });
+        });
+      };
+    })
+
+  </script>
+</body>
+</html>

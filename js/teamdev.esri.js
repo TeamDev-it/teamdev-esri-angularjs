@@ -167,9 +167,8 @@ m.directive("esriMap", function ($q, esriRegistry) {
         if (scope.disableScrollZoom)
           options.smartNavigation = false;
 
-        
-        if (scope.hasBeenDestroyed)
-        {
+
+        if (scope.hasBeenDestroyed) {
           prepared.reject();
           return;
         }
@@ -177,24 +176,24 @@ m.directive("esriMap", function ($q, esriRegistry) {
           arcgisUtils.createMap(scope.webmapid, scope.mapid, { mapOptions: options }).then(function (result) {
             scope.esri_map = result.map;
             if (scope.esri_map.loaded) {
-              prepared.resolve();    
-            } else{
-              scope.esri_map.on("load", function () {   prepared.resolve();});
-            } 
+              prepared.resolve();
+            } else {
+              scope.esri_map.on("load", function () { prepared.resolve(); });
+            }
           });
         }
         else {
           scope.esri_map = new Map(scope.mapid, options);
-          scope.esri_map.on("load", function () {   prepared.resolve();});
+          scope.esri_map.on("load", function () { prepared.resolve(); });
         }
 
         prepared.promise.then(function () {
           scope.esri_map.reposition();
           scope.esri_map.resize(true);
           esriRegistry.set(scope.mapid, scope.esri_map);
-            if (scope.disableScrollZoom)
-              scope.esri_map.disableScrollWheelZoom();
-            if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);
+          if (scope.disableScrollZoom)
+            scope.esri_map.disableScrollWheelZoom();
+          if (scope.onMapReady()) scope.onMapReady()(scope.esri_map);
           scope.esri_map.on("click", function (p) {
             if (scope.onClick())
               scope.onClick()(p);
@@ -213,6 +212,9 @@ m.directive("esriMap", function ($q, esriRegistry) {
                 scope.onGraphicsClick()(result_graphics);
               });
             }
+          });
+          scope.esri_map.on("extent-change", function (p) {
+            if (scope.onExtentChange()) scope.onExtentChange()(p, scope.esri_map);
           });
         });
       });
@@ -242,7 +244,7 @@ m.directive("esriMap", function ($q, esriRegistry) {
     });
 
     createMap();
-    
+
     scope.hasBeenDestroyed = false;
     scope.$on("$destroy", function () {
       scope.hasBeenDestroyed = true;
@@ -285,6 +287,7 @@ m.directive("esriMap", function ($q, esriRegistry) {
       onMapReady: "&onMapReady",
       onClick: "&onClick",
       onGraphicsClick: "&onGraphicsClick",
+      onExtentChange: "&onExtentChange",
       clickTolerance: "=",
       isOnMobileDevice: "=",
       credentials: "=",
@@ -318,6 +321,9 @@ m.directive("esriMap", function ($q, esriRegistry) {
   };
 });
 
+/// ---------------------------------------------------------------------------------
+/// Layers definitions 
+/// ---------------------------------------------------------------------------------
 m.directive("csvLayer", function ($q, esriRegistry, $timeout) {
   return {
     restrict: "E",
@@ -383,13 +389,13 @@ m.directive("csvLayer", function ($q, esriRegistry, $timeout) {
           else
             scope.this_layer = new FeatureLayer({ featureSet: null, layerDefinition: { "geometryType": "esriGeometryPolygon", "fields": [] } }, evaluateOptions(scope));
 
-          esriMap.addLayer(scope.this_layer, scope.index).then(function(){
+          esriMap.addLayer(scope.this_layer, scope.index).then(function () {
             if (scope.this_layer.loaded)
               ready.resolve();
             else
               scope.this_layer.on("load", function (r) {
                 ready.resolve();
-              });            
+              });
           });
 
           if (scope.layerId || scope.id) {
@@ -555,13 +561,13 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
           else
             scope.this_layer = new FeatureLayer({ featureSet: null, layerDefinition: { "geometryType": "esriGeometryPolygon", "fields": [] } }, evaluateOptions(scope));
 
-          esriMap.addLayer(scope.this_layer, scope.index).then(function(){
+          esriMap.addLayer(scope.this_layer, scope.index).then(function () {
             if (scope.this_layer.loaded)
               ready.resolve();
             else
               scope.this_layer.on("load", function (r) {
                 ready.resolve();
-              });            
+              });
           });
 
           if (scope.layerId || scope.id) {
@@ -744,6 +750,41 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
   };
 });
 
+m.directive("labelLayer", function ($q) {
+  return {
+    restrict: "E",
+    require: ["^featureLayer", "^csvLayer", "^esriMap"],
+    scope: {
+      fieldName: "@"
+    },
+    link: function (scope, element, attr, parents) {
+      var ready = $q.defer();
+      scope.isObjectReady = ready.promise;
+      require(["esri/layers/LabelLayer", "esri/symbols/TextSymbol", "esri/renderers/SimpleRenderer"],
+        function (LabelLayer, TextSymbol, SimpleRenderer) {
+          var symbol = new TextSymbol();
+          var renderer = new SimpleRenderer(symbol);
+          scope.this_layer = new LabelLayer();
+
+          (parents[0] || parents[1]).getLayer(function (l) {
+            scope.this_layer.addFeatureLayer(l, renderer, "{" + scope.fieldName + "}");
+            parents[2].addLayer(scope.this_layer);
+          });
+          ready.resolve();
+        });
+
+      scope.$on("$destroy", function () {
+        scope.isObjectReady.then(function () {
+          parents[2].removeLayer(scope.this_layer);
+        });
+      });
+    }
+  };
+});
+
+/// ---------------------------------------------------------------------------------
+/// Editors definitions
+/// ---------------------------------------------------------------------------------
 m.directive("editor", function ($q) {
   return {
     restrict: "E",
@@ -786,7 +827,7 @@ m.directive("editor", function ($q) {
             var settings = {
               layerInfos: featureLayerInfos,
               map: m,
-              toolbarVisible: scope.toolbarVisible  === "true",
+              toolbarVisible: scope.toolbarVisible === "true",
               maxUndoRedoOperations: scope.maxUndoRedoOperations || 5,
               geometryService: scope.geometryService,
               enableUndoRedo: scope.enableUndoRedo === "true",
@@ -839,45 +880,16 @@ m.directive("editTool", function ($q) {
   };
 });
 
-m.directive("labelLayer", function ($q) {
-  return {
-    restrict: "E",
-    require: ["^featureLayer", "^esriMap"],
-    scope: {
-      fieldName: "@"
-    },
-    link: function (scope, element, attr, parents) {
-      var ready = $q.defer();
-      scope.isObjectReady = ready.promise;
-      require(["esri/layers/LabelLayer", "esri/symbols/TextSymbol", "esri/renderers/SimpleRenderer"],
-        function (LabelLayer, TextSymbol, SimpleRenderer) {
-          var symbol = new TextSymbol();
-          var renderer = new SimpleRenderer(symbol);
-          scope.this_layer = new LabelLayer();
-
-          parents[0].getLayer(function (l) {
-            scope.this_layer.addFeatureLayer(l, renderer, "{" + scope.fieldName + "}");
-            parents[1].addLayer(scope.this_layer);
-          });
-          ready.resolve();
-        });
-
-      scope.$on("$destroy", function () {
-        scope.isObjectReady.then(function () {
-          parents[1].removeLayer(scope.this_layer);
-        });
-      });
-    }
-  };
-});
-
+/// ---------------------------------------------------------------------------------
+/// Geometry definitions
+/// ---------------------------------------------------------------------------------
 m.directive("polyLine", function ($q) {
 
   return {
     restrict: "E",
     require: ["?^graphicsLayer", "?^featureLayer"],
     scope: {
-      json: "=", 
+      json: "=",
       deepWatch: "@"
     },
     link: {
@@ -885,47 +897,45 @@ m.directive("polyLine", function ($q) {
         var ready = $q.defer();
         scope.isObjectReady = ready.promise;
         var layer = layers[0] || layers[1];
-        
-        var create = function (){
+
+        var create = function () {
           require(["esri/geometry/Polyline", "esri/graphic"], function (Polyline, Graphic) {
-            
+
             if (scope.json)
               if (scope.json instanceof Object && scope.json.type === "polyline")
                 scope.geometry = scope.json;
               else
                 scope.geometry = new Polyline(scope.json);
-              if (scope.symbol) {
-                scope.graphic = new Graphic(scope.geometry, scope.symbol);
-                layer.add(scope.graphic);
-              }
-              else {
-                scope.graphic = new Graphic(scope.geometry);
-                layer.add(scope.graphic);
-              }
-              if (scope.extra) scope.graphic.extra = scope.extra;
-          });          
+            if (scope.symbol) {
+              scope.graphic = new Graphic(scope.geometry, scope.symbol);
+              layer.add(scope.graphic);
+            }
+            else {
+              scope.graphic = new Graphic(scope.geometry);
+              layer.add(scope.graphic);
+            }
+            if (scope.extra) scope.graphic.extra = scope.extra;
+          });
         };
-        
+
         create();
         ready.resolve();
 
         scope.$on("$destroy", function () { scope.isObjectReady.then(function () { layer.remove(scope.graphic); }); });
-        scope.$watch('json', function(newVal, oldVal)
-        {
-          if(scope.isObjectReady.$$state.status > 0)
+        scope.$watch('json', function (newVal, oldVal) {
+          if (scope.isObjectReady.$$state.status > 0)
             scope.isObjectReady.then(function () {
               layer.remove(scope.graphic);
               create();
             });
         }, scope.deepWatch === "true");
-        
+
       }
     },
     controller: function ($scope) {
       this.setSymbol = function (val) {
         $scope.symbol = val;
-        if(typeof($scope.isObjectReady) !== "undefined" && $scope.isObjectReady)
-        {
+        if (typeof ($scope.isObjectReady) !== "undefined" && $scope.isObjectReady) {
           $scope.isObjectReady.then(function () {
             $scope.graphic.setSymbol(val);
             $scope.graphic.draw();
@@ -937,64 +947,62 @@ m.directive("polyLine", function ($q) {
 });
 
 m.directive("polygon", function ($q) {
-  
+
   return {
     restrict: "E",
     require: ["?^graphicsLayer", "?^featureLayer"],
     scope: {
       json: "=",
-      extra: "=", 
+      extra: "=",
       deepWatch: "@"
     },
     link: {
-      post: function(scope, element, attrs, layers) {
+      post: function (scope, element, attrs, layers) {
         var ready = $q.defer();
         scope.isObjectReady = ready.promise;
         var layer = layers[0] || layers[1];
-        
-        var create = function(){
-        require(["esri/geometry/Polygon", "esri/graphic"], function (Polygon, Graphic) {
-          
-          if (scope.json)
-            if (scope.json instanceof Object && scope.json.type === "polygon")
-              scope.geometry = scope.json;
-            else
-              scope.geometry = new Polygon(scope.json);
-          if (scope.symbol) {
-            scope.graphic = new Graphic(scope.geometry, scope.symbol);
-            layer.add(scope.graphic);
-          }
-          else {
-            scope.graphic = new Graphic(scope.geometry);
-            layer.add(scope.graphic);
-          }
-          
-          if (scope.extra) scope.graphic.extra = scope.extra;
-          
-        });
+
+        var create = function () {
+          require(["esri/geometry/Polygon", "esri/graphic"], function (Polygon, Graphic) {
+
+            if (scope.json)
+              if (scope.json instanceof Object && scope.json.type === "polygon")
+                scope.geometry = scope.json;
+              else
+                scope.geometry = new Polygon(scope.json);
+            if (scope.symbol) {
+              scope.graphic = new Graphic(scope.geometry, scope.symbol);
+              layer.add(scope.graphic);
+            }
+            else {
+              scope.graphic = new Graphic(scope.geometry);
+              layer.add(scope.graphic);
+            }
+
+            if (scope.extra) scope.graphic.extra = scope.extra;
+
+          });
         };
-        
+
         create();
         ready.resolve();
-        
+
         scope.$on("$destroy", function () { scope.isObjectReady.then(function () { layer.remove(scope.graphic); }); });
-        scope.$watch('json', function(newVal, oldVal)
-        {
-          if(scope.isObjectReady.$$state.status > 0)
+        scope.$watch('json', function (newVal, oldVal) {
+          if (scope.isObjectReady.$$state.status > 0)
             scope.isObjectReady.then(function () {
               layer.remove(scope.graphic);
               create();
             });
         }, scope.deepWatch === "true");
-        
-        
+
+
       }
     },
     controller: function ($scope) {
       this.setSymbol = function (val) {
         $scope.symbol = val;
-        if(typeof($scope.isObjectReady) !== "undefined" && $scope.isObjectReady)
-        {
+        if (typeof ($scope.isObjectReady) !== "undefined" && $scope.isObjectReady) {
           $scope.isObjectReady.then(function () {
             $scope.graphic.setSymbol(val);
             $scope.graphic.draw();
@@ -1228,6 +1236,9 @@ m.directive("circle", function ($q) {
   };
 });
 
+/// ---------------------------------------------------------------------------------
+/// Popups
+/// ---------------------------------------------------------------------------------
 m.directive("tooltip", function ($timeout) {
   return {
     restrict: "E",
@@ -1308,10 +1319,13 @@ m.directive("infoWindow", function ($q, $compile, $timeout) {
   };
 });
 
+/// ---------------------------------------------------------------------------------
+/// Renderers
+/// ---------------------------------------------------------------------------------
 m.directive("uniqueValueRenderer", function ($q) {
   return {
     restrict: "E",
-    require: ["^featureLayer"],
+    require: ["^featureLayer", "^csvLayer"],
     link: {
       pre: function (scope, element, attr, layer) {
 
@@ -1341,6 +1355,44 @@ m.directive("uniqueValueRenderer", function ($q) {
   };
 });
 
+m.directive("heatmapRenderer", function ($q) {
+  var ready = $q.defer();
+  var isready = ready.promise;
+
+  return {
+    restrict: "E",
+    require: ["^featureLayer", "^csvLayer"],
+    scope: {
+      blurRadius: "=",
+      colorStops: "=",
+      colors: "=",
+      field: "=",
+      maxPixelIntensity: "=",
+      minPixelIntensity: "="
+    },
+    link: function (scope, element, attrs, esrimap) {
+      require(["esri/renderers/HeatmapRenderer"], function (HeatmapRenderer) {
+
+        scope.this_renderer = new HeatmapRenderer({
+          colors: scope.colors,
+          blurRadius: scope.blurRadius,
+          field: scope.field,
+          maxPixelIntensity: scope.maxPixelIntensity,
+          minPixelIntensity: scope.minPixelIntensity
+        });
+        ready.resolve();
+      });
+
+      scope.$watch("blurRadius", function () { isready.then(function () { scope.this_renderer.setBlurRadius(scope.blurRadius); }); });
+      scope.$watch("colorStops", function () { isready.then(function () { scope.this_renderer.setColorStops(scope.colorStops); }); });
+      scope.$watch("colors", function () { isready.then(function () { scope.this_renderer.setColors(scope.colors); }); });
+      scope.$watch("field", function () { isready.then(function () { scope.this_renderer.setField(scope.field); }); });
+      scope.$watch("maxPixelIntensity", function () { isready.then(function () { scope.this_renderer.setMaxPixelIntensity(scope.maxPixelIntensity); }); });
+      scope.$watch("minPixelIntensity", function () { isready.then(function () { scope.this_renderer.setMinPixelIntensity(scope.minPixelIntensity); }); });
+    }
+  };
+});
+
 m.directive("valueInfo", function ($q) {
   return {
     restrict: "E",
@@ -1357,6 +1409,9 @@ m.directive("valueInfo", function ($q) {
   };
 });
 
+/// ---------------------------------------------------------------------------------
+/// Symbols
+/// ---------------------------------------------------------------------------------
 m.directive("pictureMarkerSymbol", function ($q) {
   return {
     restrict: "EA",
@@ -1479,7 +1534,7 @@ m.directive("simpleFillSymbol", function ($q) {
           ready.resolve();
           var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8]);
           if (ctrl) ctrl.setSymbol(scope.this_symbol);
-                
+
           attr.$observe("symbolColor", function (n, o) {
             if (n)
               scope.this_symbol.setColor(Color.fromString(n));
