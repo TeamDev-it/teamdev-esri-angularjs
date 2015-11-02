@@ -1,0 +1,68 @@
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+  <link rel="stylesheet" href="../css/teamdev.esri.css">
+  <script src="http://js.arcgis.com/3.14/"></script>
+  <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+  <script src="../js/teamdev.esri.js"></script>
+</head>
+<!--
+  http://services.arcgis.com/OLiydejKCZTGhvWg/arcgis/rest/services/Berlin_Radverkehrsanlagen/FeatureServer/0
+  http://services.arcgis.com/q3Zg9ERurv23iysr/arcgis/rest/services/berlin_musa/FeatureServer/
+
+-->
+
+<body ng-app="MapApp" ng-controller="myController">
+  <div class="container-fluid">
+    <div class="col-xs-10">
+      <esri-map base-map="gray" map-id="map" map-center="[13.3714665,52.5032511]" zoom="12" auto-resize="true">
+        <search target="search">
+        </search>
+        <feature-layer ng-if="cycleLane" url="http://services.arcgis.com/OLiydejKCZTGhvWg/arcgis/rest/services/Berlin_Radverkehrsanlagen/FeatureServer/0" mode="MODE_AUTO">
+        </feature-layer>
+        <feature-layer url="http://services.arcgis.com/q3Zg9ERurv23iysr/ArcGIS/rest/services/berlin_musa/FeatureServer/0">
+        </feature-layer>
+        <feature-layer url="http://services.arcgis.com/q3Zg9ERurv23iysr/ArcGIS/rest/services/berlin_musa/FeatureServer/1">
+        </feature-layer>
+        <feature-layer url="http://services.arcgis.com/q3Zg9ERurv23iysr/ArcGIS/rest/services/berlin_musa/FeatureServer/2">
+        </feature-layer>
+        <graphics-layer>
+          <point latitude="myPosition.lat" longitude="myPosition.lng">
+            <simple-text-symbol font-size="24" font-family="'FontAwesome'" text="&#xf041;" >
+            </simple-text-symbol>
+          </point>
+        </graphics-layer>
+      </esri-map>
+    </div>
+    <div class="col-xs-2">
+      <div class="row">
+        <div class="col-xs-12">
+          <div id="search"></div>
+        </div>
+      </div>
+      <div class="checkbox"><label><input type="checkbox" ng-model="cycleLane">Cycle Lane</label></div>
+      <div class="row">
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    angular.module("MapApp").controller("myController", function ($scope) {
+
+      if (navigator.geolocation)
+        navigator.geolocation.getCurrentPosition(function (position) {
+          $scope.myPosition = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          }
+        })
+    });
+  </script>
+</body>
+</html>
