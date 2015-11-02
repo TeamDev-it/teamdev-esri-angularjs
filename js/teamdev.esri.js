@@ -1,9 +1,8 @@
 /* global O */
 /* global angular */
 angular.module("MapApp", ["teamdev.esri"]).controller("defaultController", function () { });
-var m = angular.module("teamdev.esri", []);
-
-m.factory("esriRegistry", function ($window) {
+angular.module("teamdev.esri", [])
+.factory("esriRegistry", function ($window) {
   if (typeof $window.teamdev == 'undefined')
     $window.teamdev = { esri_registry: {} };
 
@@ -18,9 +17,8 @@ m.factory("esriRegistry", function ($window) {
       $window.teamdev.esri_registry[name] = null;
     }
   };
-});
-
-m.factory("esriQuery", function ($q, esriRegistry) {
+})
+.factory("esriQuery", function ($q, esriRegistry) {
   function setParameter(destination, source, parameter) {
     if (typeof (source && source[parameter]) !== "undefined" && source[parameter]) destination[parameter] = source[parameter];
   }
@@ -126,9 +124,8 @@ m.factory("esriQuery", function ($q, esriRegistry) {
         });
     }
   };
-});
-
-m.directive("esriMap", function ($q, esriRegistry) {
+})
+.directive("esriMap", function ($q, esriRegistry) {
   function link(scope, element, attrs) {
     function createMap() {
       var prepared = $q.defer();
@@ -319,12 +316,12 @@ m.directive("esriMap", function ($q, esriRegistry) {
       };
     }
   };
-});
+})
 
 /// ---------------------------------------------------------------------------------
 /// Layers definitions 
 /// ---------------------------------------------------------------------------------
-m.directive("csvLayer", function ($q, esriRegistry, $timeout) {
+.directive("csvLayer", function ($q, esriRegistry, $timeout) {
   return {
     restrict: "E",
     require: "^esriMap",
@@ -497,9 +494,8 @@ m.directive("csvLayer", function ($q, esriRegistry, $timeout) {
       };
     }
   };
-});
-
-m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
+})
+.directive("featureLayer", function ($q, esriRegistry, $timeout) {
   return {
     restrict: "E",
     require: "^esriMap",
@@ -669,9 +665,8 @@ m.directive("featureLayer", function ($q, esriRegistry, $timeout) {
       };
     }
   };
-});
-
-m.directive("graphicsLayer", function ($q, esriRegistry) {
+})
+.directive("graphicsLayer", function ($q, esriRegistry) {
 
   return {
     restrict: "E",
@@ -748,9 +743,8 @@ m.directive("graphicsLayer", function ($q, esriRegistry) {
       };
     }
   };
-});
-
-m.directive("labelLayer", function ($q) {
+})
+.directive("labelLayer", function ($q) {
   return {
     restrict: "E",
     require: ["^featureLayer", "^csvLayer", "^esriMap"],
@@ -780,12 +774,12 @@ m.directive("labelLayer", function ($q) {
       });
     }
   };
-});
+})
 
 /// ---------------------------------------------------------------------------------
 /// Editors definitions
 /// ---------------------------------------------------------------------------------
-m.directive("editor", function ($q) {
+.directive("editor", function ($q) {
   return {
     restrict: "E",
     require: ["^esriMap"],
@@ -865,9 +859,9 @@ m.directive("editor", function ($q) {
       });
     }
   };
-});
+})
 
-m.directive("editTool", function ($q) {
+.directive("editTool", function ($q) {
   return {
     restrict: "E",
     require: ["^editor"],
@@ -878,12 +872,12 @@ m.directive("editTool", function ($q) {
       parents[0].addTool(scope.type);
     }
   };
-});
+})
 
 /// ---------------------------------------------------------------------------------
 /// Geometry definitions
 /// ---------------------------------------------------------------------------------
-m.directive("polyLine", function ($q) {
+.directive("polyLine", function ($q) {
 
   return {
     restrict: "E",
@@ -944,9 +938,9 @@ m.directive("polyLine", function ($q) {
       };
     }
   };
-});
+})
 
-m.directive("polygon", function ($q) {
+.directive("polygon", function ($q) {
 
   return {
     restrict: "E",
@@ -1011,9 +1005,9 @@ m.directive("polygon", function ($q) {
       };
     }
   };
-});
+})
 
-m.directive("point", function ($q) {
+.directive("point", function ($q) {
   function renderpoint(scope, layer) {
     var ready = $q.defer();
     scope.isObjectReady = ready.promise;
@@ -1121,9 +1115,9 @@ m.directive("point", function ($q) {
       };
     }
   };
-});
+})
 
-m.directive("search", function ($q, esriRegistry) {
+.directive("search", function ($q, esriRegistry) {
   return {
     restrict: "E",
     require: "^esriMap",
@@ -1158,9 +1152,9 @@ m.directive("search", function ($q, esriRegistry) {
       }
     }
   };
-});
+})
 
-m.directive("circle", function ($q) {
+.directive("circle", function ($q) {
   function renderpoint(scope, layer) {
     var ready = $q.defer();
     scope.isObjectReady = ready.promise;
@@ -1234,12 +1228,12 @@ m.directive("circle", function ($q) {
       };
     }
   };
-});
+})
 
 /// ---------------------------------------------------------------------------------
 /// Popups
 /// ---------------------------------------------------------------------------------
-m.directive("tooltip", function ($timeout) {
+.directive("tooltip", function ($timeout) {
   return {
     restrict: "E",
     require: ["^featureLayer"],
@@ -1272,9 +1266,9 @@ m.directive("tooltip", function ($timeout) {
         });
     }
   };
-});
+})
 
-m.directive("infoWindow", function ($q, $compile, $timeout) {
+.directive("infoWindow", function ($q, $compile, $timeout) {
   return {
     restrict: "E",
     require: ["?^featureLayer", "?^graphicsLayer", "?^esriMap"],
@@ -1317,12 +1311,12 @@ m.directive("infoWindow", function ($q, $compile, $timeout) {
         });
     }
   };
-});
+})
 
 /// ---------------------------------------------------------------------------------
 /// Renderers
 /// ---------------------------------------------------------------------------------
-m.directive("uniqueValueRenderer", function ($q) {
+.directive("uniqueValueRenderer", function ($q) {
   return {
     restrict: "E",
     require: ["^featureLayer", "^csvLayer"],
@@ -1353,9 +1347,9 @@ m.directive("uniqueValueRenderer", function ($q) {
       };
     }
   };
-});
+})
 
-m.directive("heatmapRenderer", function ($q) {
+.directive("heatmapRenderer", function ($q) {
   var ready = $q.defer();
   var isready = ready.promise;
 
@@ -1391,9 +1385,9 @@ m.directive("heatmapRenderer", function ($q) {
       scope.$watch("minPixelIntensity", function () { isready.then(function () { scope.this_renderer.setMinPixelIntensity(scope.minPixelIntensity); }); });
     }
   };
-});
+})
 
-m.directive("valueInfo", function ($q) {
+.directive("valueInfo", function ($q) {
   return {
     restrict: "E",
     require: ["^uniqueValueRenderer"],
@@ -1407,12 +1401,12 @@ m.directive("valueInfo", function ($q) {
       renderer[0].setInfo(attr.value, scope.this_symbol);
     }
   };
-});
+})
 
 /// ---------------------------------------------------------------------------------
 /// Symbols
 /// ---------------------------------------------------------------------------------
-m.directive("pictureMarkerSymbol", function ($q) {
+.directive("pictureMarkerSymbol", function ($q) {
   return {
     restrict: "EA",
     scope: {
@@ -1443,9 +1437,9 @@ m.directive("pictureMarkerSymbol", function ($q) {
       });
     }
   };
-});
+})
 
-m.directive("simpleLineSymbol", function ($q) {
+.directive("simpleLineSymbol", function ($q) {
   return {
     restrict: "EA",
     require: ["?^simpleFillSymbol", "?^simpleMarkerSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
@@ -1498,9 +1492,9 @@ m.directive("simpleLineSymbol", function ($q) {
       });
     }
   };
-});
+})
 
-m.directive("simpleFillSymbol", function ($q) {
+.directive("simpleFillSymbol", function ($q) {
   return {
     restrict: "EA",
     require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
@@ -1552,9 +1546,9 @@ m.directive("simpleFillSymbol", function ($q) {
       };
     }
   };
-});
+})
 
-m.directive("simpleTextSymbol", function ($q) {
+.directive("simpleTextSymbol", function ($q) {
   return {
     restrict: "EA",
     require: ["?point", "?^point", "?^graphicsLayer", "?^featureLayer"],
@@ -1621,9 +1615,9 @@ m.directive("simpleTextSymbol", function ($q) {
       }
     }
   };
-});
+})
 
-m.directive("simpleMarkerSymbol", function ($q) {
+.directive("simpleMarkerSymbol", function ($q) {
   return {
     restrict: "EA",
     require: ["?point", "?^point", "?^graphicsLayer", "?^featureLayer"],
