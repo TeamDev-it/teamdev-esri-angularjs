@@ -1241,7 +1241,7 @@ angular.module("teamdev.esri", [])
     link: function (scope, element, attr, layer, transclude) {
       element.css("display", "none");
       element.css("position", "fixed");
-      element.css("z-index", "9999");
+      element.css("z-index", "30");
       scope.$g = null;
       scope._tooltipHide = null;
       if (layer[0])
@@ -1555,13 +1555,13 @@ angular.module("teamdev.esri", [])
     scope: {
       textColor: "@",
       text: "@",
-      fontSize: "=",
-      fontStyle: "=",
-      fontVariant: "=",
-      fontWeight: "=",
-      fontFamily: "=",
-      xOffset: "=",
-      yOffset: "="
+      fontSize: "@",
+      fontStyle: "@",
+      fontVariant: "@",
+      fontWeight: "@",
+      fontFamily: "@",
+      xOffset: "@",
+      yOffset: "@"
     },
     link: {
       pre: function (scope, element, attr, parents) {
