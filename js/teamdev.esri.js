@@ -1442,7 +1442,7 @@ angular.module("teamdev.esri", [])
 .directive("simpleLineSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?^simpleFillSymbol", "?^simpleMarkerSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^pictureFillSymbol", "?^simpleFillSymbol", "?^simpleMarkerSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
     scope: {
       symbolColor: "@"
     },
@@ -1476,7 +1476,7 @@ angular.module("teamdev.esri", [])
           Color.fromString(attr.symbolColor),
           attr.symbolWidth);
         ready.resolve();
-        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9] || parents[10]);
+        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9] || parents[10] || parents[11]);
         if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
 
         if (scope.symbolColor) scope.$watch("symbolColor", function (n, o) {
@@ -1548,6 +1548,44 @@ angular.module("teamdev.esri", [])
   };
 })
 
+.directive("pictureFillSymbol", function ($q) {
+  return {
+    restrict: "EA",
+    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
+    link: {
+      pre: function (scope, element, attr, parents) {
+        var ready = $q.defer();
+        scope.isObjectReady = ready.promise;
+        require(["esri/symbols/PictureFillSymbol", "esri/Color"], function (PictureFillSymbol, Color) {
+          scope.this_symbol = new PictureFillSymbol(attr.symbolUrl);
+
+          if (attr.symbolColor) scope.this_symbol.setColor(Color.fromString(attr.symbolColor));
+          if (attr.symbolWidth) scope.this_symbol.setWidth(attr.symbolWidth);
+          if (attr.symbolHeight) scope.this_symbol.setHeight(attr.symbolHeight);
+
+          ready.resolve();
+          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8]);
+          if (ctrl) ctrl.setSymbol(scope.this_symbol);
+
+          attr.$observe("symbolColor", function (n, o) {
+            if (n)
+              scope.this_symbol.setColor(Color.fromString(n));
+            if (ctrl)
+              ctrl.setSymbol(scope.this_symbol);
+          });
+        });
+      }
+    },
+    controller: function ($scope) {
+      this.setSymbol = function (s) {
+        $scope.isObjectReady.then(function () {
+          $scope.this_symbol.setOutline(s);
+        });
+      };
+    }
+  };
+})
+
 .directive("simpleTextSymbol", function ($q) {
   return {
     restrict: "EA",
@@ -1568,7 +1606,6 @@ angular.module("teamdev.esri", [])
         var ready = $q.defer();
         scope.isObjectReady = ready.promise;
         require(["esri/symbols/TextSymbol", "esri/Color", "esri/symbols/Font"], function (TextSymbol, Color, Font) {
-
 
           var fontStyle = Font.STYLE_NORMAL;
           if (scope.fontStyle) {
@@ -1594,13 +1631,14 @@ angular.module("teamdev.esri", [])
           var font = new Font(scope.fontSize || "16", fontStyle, fontVariant, fontWeight, scope.fontFamily);
 
           scope.this_symbol = new TextSymbol(scope.text || attr.simpleTextSymbol || "", font);
-          if (scope.xOffset && scope.yOffset) scope.this_symbol.setOffset(scope.xOffset, scope.yOffset);
-          else if (scope.xOffset) scope.this_symbol.setOffset(scope.xOffset, 0);
-          else if (scope.yOffset) scope.this_symbol.setOffset(0, scope.yOffset);
+
+
+          if (scope.xOffset && scope.yOffset) scope.this_symbol.setOffset(parseInt(scope.xOffset), parseInt(scope.yOffset));
+          else if (scope.xOffset) scope.this_symbol.setOffset(parseInt(scope.xOffset), 0);
+          else if (scope.yOffset) scope.this_symbol.setOffset(0, parseInt(scope.yOffset));
 
           if (scope.textColor)
             scope.this_symbol.setColor(Color.fromString(scope.textColor));
-
 
           ready.resolve();
           scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3]);
@@ -1623,7 +1661,8 @@ angular.module("teamdev.esri", [])
     require: ["?point", "?^point", "?^graphicsLayer", "?^featureLayer"],
     scope: {
       json: "=",
-      color: "@"
+      color: "@",
+      path: "@"
     },
     link: {
       pre: function (scope, element, attr, parents) {
@@ -1631,7 +1670,25 @@ angular.module("teamdev.esri", [])
         scope.isObjectReady = ready.promise;
         require(["esri/symbols/SimpleMarkerSymbol", "esri/Color"], function (SimpleMarkerSymbol, Color) {
 
-          scope.this_symbol = new SimpleMarkerSymbol(scope.json);
+          var style = SimpleMarkerSymbol.STYLE_CIRCLE;
+          var sym = attr.symbolStyle || attr.SimpleMarkerSymbol;
+          if (sym) {
+            switch (sym) {
+              case "STYLE_CIRCLE": style = SimpleMarkerSymbol.STYLE_BACKWARD_DIAGONAL; break;
+              case "STYLE_CROSS": style = SimpleMarkerSymbol.STYLE_CROSS; break;
+              case "STYLE_DIAMOND": style = SimpleMarkerSymbol.STYLE_DIAMOND; break;
+              case "STYLE_PATH": style = SimpleMarkerSymbol.STYLE_PATH; break;
+              case "STYLE_SQUARE": style = SimpleMarkerSymbol.STYLE_SQUARE; break;
+              case "STYLE_X": style = SimpleMarkerSymbol.STYLE_X; break;
+              default: style = sym;
+            }
+          }
+
+          if (scope.json)
+            scope.this_symbol = new SimpleMarkerSymbol(scope.json);
+          else
+            scope.this_symbol = new SimpleMarkerSymbol();
+
           if (scope.color != undefined) {
             if (scope.color) scope.this_symbol.setColor(Color.fromString(scope.color));
             scope.$watch("color", function (n, o) {
@@ -1640,6 +1697,9 @@ angular.module("teamdev.esri", [])
               }
             });
           }
+
+          if (attr.size != undefined && attr.size) scope.this_symbol.setSize(parseInt(attr.size));
+          if (scope.path != undefined && scope.path) scope.this_symbol.setPath(scope.path);
 
           ready.resolve();
           scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3]);

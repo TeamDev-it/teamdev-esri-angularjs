@@ -11,8 +11,8 @@
 			vs:SuccinctFriendlyName="HTML5"
 			vs:customattrprefix="data-">
 
-  <xs:element name="esri-map" type="mapType" vs:disallowshorthand="true" vs:structural="true" vs:block="true"/>
-  <xs:complexType name="mapType" >
+  <xs:element name="esri-map" type="mapType" />
+  <xs:complexType mixed="true" name="mapType" >
     <xs:choice  minOccurs="0" maxOccurs="unbounded">
       <xs:element ref="feature-layer"></xs:element>
       <xs:element ref="graphics-layer" ></xs:element>
@@ -66,8 +66,8 @@
 
   </xs:complexType>
 
-  <xs:element name="feature-layer" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
+  <xs:element name="feature-layer" >
+    <xs:complexType mixed="true" >
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="label-layer"></xs:element>
         <xs:element ref="poly-line"></xs:element>
@@ -110,8 +110,8 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="graphics-layer" vs:disallowshorthand="true" vs:structural="true" vs:block="true" >
-    <xs:complexType >
+  <xs:element name="graphics-layer"  >
+    <xs:complexType mixed="true" >
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="poly-line"></xs:element>
         <xs:element ref="point" ></xs:element>
@@ -130,8 +130,8 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="editor" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType>
+  <xs:element name="editor" >
+    <xs:complexType mixed="true">
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="edit-tool"></xs:element>
       </xs:choice>
@@ -148,7 +148,7 @@
   </xs:element>
 
   <xs:element name="edit-tool">
-    <xs:complexType>
+    <xs:complexType mixed="true">
       <xs:attribute name="type"  use="required">
         <xs:simpleType>
           <xs:restriction base="xsd:NMTOKEN" >
@@ -168,8 +168,8 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="label-layer" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
+  <xs:element name="label-layer" >
+    <xs:complexType mixed="true" >
       <xs:attribute name="id" type="xs:string" use="required" />
       <xs:attribute name="visible" type="xs:string" use="optional" />
       <xs:attribute name="on-click" type="xs:string" use="optional" />
@@ -177,19 +177,15 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="search" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
-      <xs:choice  minOccurs="0" maxOccurs="unbounded">
-
-      </xs:choice>
+  <xs:element name="search"  >
+    <xs:complexType mixed="true"   >
       <xs:attribute name="id" type="xs:string" use="required" />
       <xs:attribute name="target" type="xs:string" use="optional" />
     </xs:complexType>
   </xs:element>
 
-
-  <xs:element name="poly-line" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
+  <xs:element name="poly-line" >
+    <xs:complexType mixed="true" >
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="simple-fill-symbol"></xs:element>
         <xs:element ref="simple-line-symbol"></xs:element>
@@ -198,8 +194,8 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="point" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
+  <xs:element name="point" >
+    <xs:complexType mixed="true" >
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="picture-marker-symbol" ></xs:element>
         <xs:element ref="simple-fill-symbol" ></xs:element>
@@ -216,9 +212,8 @@
     </xs:complexType>
   </xs:element>
 
-
-  <xs:element name="circle" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
+  <xs:element name="circle" >
+    <xs:complexType mixed="true" >
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="simple-fill-symbol" ></xs:element>
         <xs:element ref="simple-line-symbol" ></xs:element>
@@ -232,26 +227,19 @@
     </xs:complexType>
   </xs:element>
 
-
-  <xs:element name="tooltip" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType  >
-      <xs:choice  minOccurs="0" maxOccurs="unbounded">
-
-      </xs:choice>
+  <xs:element name="tooltip" >
+    <xs:complexType mixed="true"  >
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="info-window" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
-      <xs:choice  minOccurs="0" maxOccurs="unbounded">
-
-      </xs:choice>
+  <xs:element name="info-window" >
+    <xs:complexType mixed="true" >
       <xs:attribute name="title" type="xs:string" use="optional" />
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="unique-value-renderer" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
+  <xs:element name="unique-value-renderer" >
+    <xs:complexType mixed="true" >
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="value-info"></xs:element>
         <xs:element ref="picture-marker-symbol"></xs:element>
@@ -260,8 +248,8 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="value-info" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
+  <xs:element name="value-info" >
+    <xs:complexType mixed="true" >
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="picture-marker-symbol"></xs:element>
       </xs:choice>
@@ -269,26 +257,40 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="picture-marker-symbol" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType>
+  <xs:element name="picture-marker-symbol" >
+    <xs:complexType mixed="true">
       <xs:attribute name="symbol-url" type="xs:string" use="optional" />
       <xs:attribute name="symbol-width" type="xs:string" use="optional" />
       <xs:attribute name="symbol-height" type="xs:string" use="optional" />
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="simple-marker-symbol" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
+  <xs:element name="simple-marker-symbol" >
+    <xs:complexType mixed="true" >
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="simple-line-symbol"></xs:element>
       </xs:choice>
       <xs:attribute name="json" type="xs:string" use="optional" />
       <xs:attribute name="color" type="xs:string" use="optional" />
+      <xs:attribute name="path" type="xs:string" use="optional" />
+      <xs:attribute name="size" type="xs:string" use="optional" />
+      <xs:attribute name="symbol-style" use="optional">
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN">
+            <xs:enumeration value="STYLE_CIRCLE"></xs:enumeration>
+            <xs:enumeration value="STYLE_CROSS"></xs:enumeration>
+            <xs:enumeration value="STYLE_DIAMOND"></xs:enumeration>
+            <xs:enumeration value="STYLE_PATH"></xs:enumeration>
+            <xs:enumeration value="STYLE_SQUARE"></xs:enumeration>
+            <xs:enumeration value="STYLE_X"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="simple-fill-symbol" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
+  <xs:element name="simple-fill-symbol" >
+    <xs:complexType mixed="true" >
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="simple-line-symbol"></xs:element>
       </xs:choice>
@@ -310,8 +312,8 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="simple-text-symbol" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType >
+  <xs:element name="simple-text-symbol" >
+    <xs:complexType mixed="true">
       <xs:attribute name="text-color" type="xs:string" use="optional" />
       <xs:attribute name="text" type="xs:string" use="optional" />
       <xs:attribute name="font-size" type="xs:string" use="optional" />
@@ -348,8 +350,8 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="simple-line-symbol" vs:disallowshorthand="true" vs:structural="true" vs:block="true">
-    <xs:complexType  >
+  <xs:element name="simple-line-symbol" >
+    <xs:complexType mixed="true"  >
       <xs:attribute name="symbol-color" type="xs:string" use="optional" />
       <xs:attribute name="symbol-width" type="xs:string" use="optional" />
       <xs:attribute name="symbol-style" use="optional" >

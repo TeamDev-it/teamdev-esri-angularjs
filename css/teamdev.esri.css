@@ -4,17 +4,6 @@
   box-sizing: border-box;
 }
 
-body {
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  position: relative;
-}
-
-.full-height {
-  height:100%;
-}
-
 
 #map {
   width: 100%;
@@ -31,4 +20,3 @@ body {
   max-height: initial;
   height: auto;
 }
-
