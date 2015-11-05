@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+path[stroke="rgb(0, 255, 255)"] {
+  stroke: none;
+}
+
 
 #map {
   width: 100%;
@@ -20,3 +24,98 @@
   max-height: initial;
   height: auto;
 }
+
+
+
+.esriSignInDialog {
+  background: #fff;
+  border: 1px solid #d3d3d3;
+  -webkit-box-shadow: 0 5px 10px #adadad;
+  padding: 20px;
+  min-width: 300px;
+  position: relative;
+}
+
+  .esriSignInDialog input[type=button] {
+    display: none;
+  }
+
+  .esriSignInDialog input[type=text],
+  .esriSignInDialog input[type=password] {
+    display: block;
+    width: 100%;
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    margin-bottom: 5px;
+  }
+
+  .esriSignInDialog .dijitButton {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 0px;
+    margin: 1px;
+  }
+
+    .esriSignInDialog .dijitButton.esriIdCancel {
+      color: #fff;
+      background-color: #d9534f;
+      border-color: #d43f3a;
+    }
+
+    .esriSignInDialog .dijitButton.esriIdSubmit {
+      color: #fff;
+      background-color: #5cb85c;
+      border-color: #4cae4c;
+    }
+
+  .esriSignInDialog .dijitReset .dijitToggleButtonIconChar {
+    display: none;
+  }
+
+  .esriSignInDialog .dijitValidationIcon {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .esriSignInDialog .dijitDialogCloseIcon {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+
+  .esriSignInDialog .dijitDialogTitle {
+    display: inline-block;
+    max-width: 100%;
+    margin-bottom: 5px;
+    font-weight: 700;
+    font-size: 1.4em;
+    color: #C30808;
+  }
