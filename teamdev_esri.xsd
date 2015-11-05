@@ -11,6 +11,8 @@
 			vs:SuccinctFriendlyName="HTML5"
 			vs:customattrprefix="data-">
 
+
+
   <xs:element name="esri-map" type="mapType" />
   <xs:complexType mixed="true" name="mapType" >
     <xs:choice  minOccurs="0" maxOccurs="unbounded">
@@ -20,6 +22,7 @@
       <xs:element ref="search" ></xs:element>
       <xs:element ref="info-window" ></xs:element>
       <xs:element ref="editor" ></xs:element>
+      <xs:element ref="draw"></xs:element>
     </xs:choice>
     <xs:attribute name="base-map" use="required" >
       <xs:simpleType>
@@ -144,6 +147,49 @@
       <xs:attribute name="enable-undo-redo" type="xs:string" use="optional" />
       <xs:attribute name="disable-attribute-update" type="xs:string" use="optional" />
       <xs:attribute name="disable-geometry-update" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="draw">
+    <xs:complexType mixed="true">
+      <xs:attribute name="id" type="xs:string" use="required" />
+      <xs:attribute name="on-draw-end" type="xs:string" use="optional" />
+      <xs:attribute name="on-draw-complete" type="xs:string" use="optional" />
+      <xs:attribute name="on-activate" type="xs:string" use="optional" />
+      <xs:attribute name="on-deactivate" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
+
+  <!--  <xs:element name="button">
+    <xs:complexType>
+      <xs:attribute name="drawing-tool"></xs:attribute>
+    </xs:complexType>
+  </xs:element> -->
+
+  <xs:element name="__all__">
+    <xs:complexType>
+      <xs:attribute name="drawing-tool">
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN" >
+            <xs:enumeration value="ARROW"></xs:enumeration>
+            <xs:enumeration value="CIRCLE"></xs:enumeration>
+            <xs:enumeration value="DOWN_ARROW"></xs:enumeration>
+            <xs:enumeration value="ELLIPSE"></xs:enumeration>
+            <xs:enumeration value="EXTENT"></xs:enumeration>
+            <xs:enumeration value="FREEHAND_POLYGON"></xs:enumeration>
+            <xs:enumeration value="FREEHAND_POLYLINE"></xs:enumeration>
+            <xs:enumeration value="LINE"></xs:enumeration>
+            <xs:enumeration value="MULTI_POINT"></xs:enumeration>
+            <xs:enumeration value="POINT"></xs:enumeration>
+            <xs:enumeration value="POLYGON"></xs:enumeration>
+            <xs:enumeration value="POLYLINE"></xs:enumeration>
+            <xs:enumeration value="RECTANGLE"></xs:enumeration>
+            <xs:enumeration value="RIGHT_ARROW"></xs:enumeration>
+            <xs:enumeration value="TRIANGLE"></xs:enumeration>
+            <xs:enumeration value="UP_ARROW"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
 

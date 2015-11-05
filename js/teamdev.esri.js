@@ -874,6 +874,124 @@ angular.module("teamdev.esri", [])
   };
 })
 
+  /*
+  
+  <draw>
+    <button draw-tool="POLYGON"></button>
+  </draw>
+  */
+
+
+.directive("draw", function ($q, esriRegistry) {
+  return {
+    restrict: "E",
+    require: "^esriMap",
+    scope: {
+      id: "@",
+      onDrawEnd: "&",
+      onDrawComplete: "&",
+      onActivate: "&",
+      onDeactivate: "&",
+    },
+    controller: function ($scope) {
+      this.activateTool = function (type) {
+        $scope.isObjectReady.then(function () {
+          if ($scope.current_tool === type) {
+            $scope.draw_tool.deactivate();
+            if ($scope.onDeactivate()) $scope.onDeactivate()($scope.draw_tool);
+            $scope.current_tool = null;
+          }
+          else {
+            $scope.draw_tool.activate(esri.toolbars.Draw[type]);
+            if ($scope.onActivate()) $scope.onActivate()($scope.draw_tool, type);
+            $scope.current_tool = type;
+          }
+        });
+      };
+    },
+    link: {
+      pre: function (scope, element, attr, parent) {
+
+      },
+      post: function (scope, element, attr, parent) {
+        var ready = $q.defer();
+        scope.isObjectReady = ready.promise;
+        require(["esri/toolbars/draw", "esri/toolbars/edit"], function (Draw, Edit) {
+          parent.getMap(function (m) {
+            scope.draw_tool = new Draw(m);
+            scope.edit_tool = new Edit(m);
+            ready.resolve();
+
+            scope.draw_tool.on("draw-end", function (evt) {
+              scope.draw_tool.deactivate();
+              if (scope.onDrawEnd()) scope.onDrawEnd()(evt, scope.draw_tool);
+            });
+
+            scope.draw_tool.on("draw-complete", function (evt) {
+              scope.draw_tool.deactivate();
+              if (scope.onDrawComplete()) scope.onDrawComplete()(evt, scope.draw_tool);
+            });
+
+            if (scope.id)
+              esriRegistry.set(scope.id, { edit: scope.edit_tool, draw: scope.draw_tool });
+          });
+        });
+      }
+    }
+  };
+})
+
+.directive("drawingTool", function ($q) {
+  return {
+    restrict: "A",
+    require: ["^draw"],
+    link: function (scope, element, attr, parents) {
+      if (attr.drawingTool && parent) {
+        element.on("click", function () {
+          parents[0].activateTool(attr.drawingTool);
+        });
+      }
+    }
+  }
+})
+
+.directive("search", function ($q, esriRegistry) {
+  return {
+    restrict: "E",
+    require: "^esriMap",
+    scope: {
+      id: "@",
+      target: "@"
+    },
+    link: {
+      pre: function (scope, element, attrs, esriMap) {
+        var ready = $q.defer();
+        scope.isObjectReady = ready.promise;
+
+        require(["esri/dijit/Search"], function (Search) {
+          esriMap.getMap(function (m) {
+
+            scope.this_layer = new Search({ map: m }, scope.target);
+            scope.this_layer.startup();
+
+            if (scope.id) {
+              scope.this_layer._layer_id = scope.id;
+              esriRegistry.set(scope.id, scope.this_layer);
+            }
+            ready.resolve();
+          });
+          scope.$on("$destroy", function () {
+            scope.isObjectReady.then(function () {
+              if (scope.id) esriRegistry.remove(scope.id);
+              scope.this_layer.destroy();
+            });
+          });
+        });
+      }
+    }
+  };
+})
+
 /// ---------------------------------------------------------------------------------
 /// Geometry definitions
 /// ---------------------------------------------------------------------------------
@@ -1113,43 +1231,6 @@ angular.module("teamdev.esri", [])
           $scope.graphic.draw();
         });
       };
-    }
-  };
-})
-
-.directive("search", function ($q, esriRegistry) {
-  return {
-    restrict: "E",
-    require: "^esriMap",
-    scope: {
-      id: "@",
-      target: "@"
-    },
-    link: {
-      pre: function (scope, element, attrs, esriMap) {
-        var ready = $q.defer();
-        scope.isObjectReady = ready.promise;
-
-        require(["esri/dijit/Search"], function (Search) {
-          esriMap.getMap(function (m) {
-
-            scope.this_layer = new Search({ map: m }, scope.target);
-            scope.this_layer.startup();
-
-            if (scope.id) {
-              scope.this_layer._layer_id = scope.id;
-              esriRegistry.set(scope.id, scope.this_layer);
-            }
-            ready.resolve();
-          });
-          scope.$on("$destroy", function () {
-            scope.isObjectReady.then(function () {
-              if (scope.id) esriRegistry.remove(scope.id);
-              scope.this_layer.destroy();
-            });
-          });
-        });
-      }
     }
   };
 })
