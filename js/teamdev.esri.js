@@ -725,7 +725,9 @@ angular.module("teamdev.esri", [])
         });
       };
       this.remove = function (g) {
+         $scope.isObjectReady.then(function () {
         $scope.this_layer.remove(g);
+         });
       };
       this.setInfoWindow = function (t, c) {
         $scope.isObjectReady.then(function () {
@@ -1037,6 +1039,7 @@ angular.module("teamdev.esri", [])
         scope.$watch('json', function (newVal, oldVal) {
           if (scope.isObjectReady.$$state.status > 0)
             scope.isObjectReady.then(function () {
+                if(layer)
               layer.remove(scope.graphic);
               create();
             });
@@ -1357,6 +1360,7 @@ angular.module("teamdev.esri", [])
     transclude: true,
     scope: {
       title: "@",
+      onSelectionChanged: "&",
     },
     link: function (scope, element, attr, parents, transclude) {
       element.css("display", "none");
@@ -1385,6 +1389,8 @@ angular.module("teamdev.esri", [])
                   });
                 $timeout(function () {
                   transclusionScope.$apply(function () { transclusionScope.$g = map.infoWindow.features[map.infoWindow.selectedIndex]; });
+                  if (scope.onSelectionChanged())
+                    scope.onSelectionChanged()(map.infoWindow.features[map.infoWindow.selectedIndex]);
                 });
               }
             });

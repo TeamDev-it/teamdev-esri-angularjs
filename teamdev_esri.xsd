@@ -11,8 +11,6 @@
 			vs:SuccinctFriendlyName="HTML5"
 			vs:customattrprefix="data-">
 
-
-
   <xs:element name="esri-map" type="mapType" />
   <xs:complexType mixed="true" name="mapType" >
     <xs:choice  minOccurs="0" maxOccurs="unbounded">
@@ -225,7 +223,7 @@
 
   <xs:element name="search"  >
     <xs:complexType mixed="true"   >
-      <xs:attribute name="id" type="xs:string" use="required" />
+      <xs:attribute name="id" type="xs:string" use="optional" />
       <xs:attribute name="target" type="xs:string" use="optional" />
     </xs:complexType>
   </xs:element>
@@ -281,6 +279,7 @@
   <xs:element name="info-window" >
     <xs:complexType mixed="true" >
       <xs:attribute name="title" type="xs:string" use="optional" />
+      <xs:attribute name="on-selection-changed" type="xs:string" use ="optional"/>
     </xs:complexType>
   </xs:element>
 
