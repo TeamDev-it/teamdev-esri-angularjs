@@ -21,6 +21,7 @@
       <xs:element ref="info-window" ></xs:element>
       <xs:element ref="editor" ></xs:element>
       <xs:element ref="draw"></xs:element>
+      <xs:element ref="directions"></xs:element>
     </xs:choice>
     <xs:attribute name="base-map" use="required" >
       <xs:simpleType>
@@ -148,6 +149,32 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="directions">
+    <xs:complexType mixed="true">
+      <xs:attribute name="id" type="xs:string" use="required" />
+      <xs:attribute name="travel-modes-service-url" type="xs:string" use="optional" />
+      <xs:attribute name="route-task-url" type="xs:string" use="optional" />
+      <xs:attribute name="show-activate-button" type="xs:string" use="optional" />
+      <xs:attribute name="show-clear-button" type="xs:string" use="optional" />
+      <xs:attribute name="show-miles-kilometers-option" type="xs:string" use="optional" />
+      <xs:attribute name="show-optimal-route-option" type="xs:string" use="optional" />
+      <xs:attribute name="show-print-page" type="xs:string" use="optional" />
+      <xs:attribute name="show-return-to-start-option" type="xs:string" use="optional" />
+      <xs:attribute name="show-reverse-stops-button" type="xs:string" use="optional" />
+      <xs:attribute name="show-segment-highlight" type="xs:string" use="optional" />
+      <xs:attribute name="show-segment-popup" type="xs:string" use="optional" />
+      <xs:attribute name="show-traffic-option" type="xs:string" use="optional" />
+      <xs:attribute name="show-travel-modes-option" type="xs:string" use="optional" />
+      <xs:attribute name="on-load" type="xs:string" use="optional" />
+      <xs:attribute name="on-directions-finish" type="xs:string" use="optional" />
+      <xs:attribute name="on-directions-clear" type="xs:string" use="optional" />
+      <xs:attribute name="on-directions-start" type="xs:string" use="optional" />
+      <xs:attribute name="on-map-click-active" type="xs:string" use="optional" />
+      <xs:attribute name="on-segment-highlight" type="xs:string" use="optional" />
+      <xs:attribute name="on-segment-select" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="draw">
     <xs:complexType mixed="true">
       <xs:attribute name="id" type="xs:string" use="required" />
@@ -158,6 +185,8 @@
     </xs:complexType>
   </xs:element>
 
+  
+  
   <!--  <xs:element name="button">
     <xs:complexType>
       <xs:attribute name="drawing-tool"></xs:attribute>
