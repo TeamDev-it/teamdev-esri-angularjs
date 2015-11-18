@@ -1560,8 +1560,6 @@ angular.module("teamdev.esri", [])
 })
 
 .directive("heatmapRenderer", function ($q) {
-  var ready = $q.defer();
-  var isready = ready.promise;
 
   return {
     restrict: "E",
@@ -1575,6 +1573,8 @@ angular.module("teamdev.esri", [])
       minPixelIntensity: "="
     },
     link: function (scope, element, attrs, layer) {
+      var ready = $q.defer();
+      scope.isready = ready.promise;
       require(["esri/renderers/HeatmapRenderer"], function (HeatmapRenderer) {
 
         scope.this_renderer = new HeatmapRenderer({
@@ -1585,15 +1585,15 @@ angular.module("teamdev.esri", [])
           minPixelIntensity: scope.minPixelIntensity
         });
         (layer[0] || layer[1]).setRenderer(scope.this_renderer);
-        ready.resolve();
+        scopeready.resolve();
       });
 
-      scope.$watch("blurRadius", function () { isready.then(function () { scope.this_renderer.setBlurRadius(scope.blurRadius); }); });
-      scope.$watch("colorStops", function () { isready.then(function () { scope.this_renderer.setColorStops(scope.colorStops); }); });
-      scope.$watch("colors", function () { isready.then(function () { scope.this_renderer.setColors(scope.colors); }); });
-      scope.$watch("field", function () { isready.then(function () { scope.this_renderer.setField(scope.field); }); });
-      scope.$watch("maxPixelIntensity", function () { isready.then(function () { scope.this_renderer.setMaxPixelIntensity(scope.maxPixelIntensity); }); });
-      scope.$watch("minPixelIntensity", function () { isready.then(function () { scope.this_renderer.setMinPixelIntensity(scope.minPixelIntensity); }); });
+      scope.$watch("blurRadius", function () { scope.isready.then(function () { scope.this_renderer.setBlurRadius(scope.blurRadius); }); });
+      scope.$watch("colorStops", function () { scope.isready.then(function () { scope.this_renderer.setColorStops(scope.colorStops); }); });
+      scope.$watch("colors", function () { scope.isready.then(function () { scope.this_renderer.setColors(scope.colors); }); });
+      scope.$watch("field", function () { scope.isready.then(function () { scope.this_renderer.setField(scope.field); }); });
+      scope.$watch("maxPixelIntensity", function () { scope.isready.then(function () { scope.this_renderer.setMaxPixelIntensity(scope.maxPixelIntensity); }); });
+      scope.$watch("minPixelIntensity", function () { scope.isready.then(function () { scope.this_renderer.setMinPixelIntensity(scope.minPixelIntensity); }); });
     }
   };
 })
