@@ -1598,7 +1598,7 @@ angular.module("teamdev.esri", [])
 .directive("infoWindow", function ($q, $compile, $timeout) {
   return {
     restrict: "E",
-    require: ["?^featureLayer", "?^graphicsLayer", "?^clusterLayer", "?^esriMap"],
+    require: ["?^featureLayer", "?^graphicsLayer", "?^clusterLayer", "^esriMap"],
     replace: false,
     transclude: true,
     scope: {
@@ -1607,7 +1607,8 @@ angular.module("teamdev.esri", [])
     },
     link: function (scope, element, attr, parents, transclude) {
       element.css("display", "none");
-      var parent = parents[0] || parents[1] || parents[2];
+      var parent = parents[0] || parents[1] || parents[2] || parents[3];
+      var esriMap = parents[3];
       var transclusionScope;
       var title = scope.title;
 
@@ -1619,8 +1620,8 @@ angular.module("teamdev.esri", [])
       var ie = navigator.userAgent.match(/MSIE/);
       var ie11 = navigator.userAgent.match(/Trident\/7\./);
 
-      if (parents[2])
-        parents[2].getMap(function (map) {
+      if (esriMap)
+        esriMap.getMap(function (map) {
           require(["dojo/_base/connect"], function (connect) {
             connect.connect(map.infoWindow, "onSelectionChange", function () {
               if (map.infoWindow.features) {
