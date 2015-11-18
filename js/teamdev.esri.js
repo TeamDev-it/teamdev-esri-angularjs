@@ -871,30 +871,37 @@ angular.module("teamdev.esri", [])
 
         var filepath = scope.dojoFile || "./teamdev-esri-angularjs/js/libs/clusterlayer.js";
 
-        require([filepath], function (ClusterLayer) {
+        var esrimap = parents[0];
 
-          var options = connector.scopeToOptions(scope);
-          if (scope.singleSymbol) options.singleSymbol = scope.singleSymbol;
+        esrimap.getMap(function (map) {
+          require([filepath], function (ClusterLayer) {
 
-          scope.this_layer = new ClusterLayer(options);
-          parents[0].addLayer(scope.this_layer, scope.index);
-          if (scope.layerId || scope.id) {
-            scope.this_layer._layer_id = scope.layerId || scope.id;
-            esriRegistry.set(scope.layerId || scope.id, scope.this_layer);
-          }
-          ready.resolve();
+            var options = connector.scopeToOptions(scope);
 
-          scope.this_layer.on("click", function (r) {
-            if (!scope.$$phase && !scope.$root.$$phase) scope.$apply(function () {
-              if (scope.onClick()) scope.onClick()(r);
+
+            if (!options.resulution) options.resolution = map.extent.getWidth() / map.width;
+
+            if (scope.singleSymbol) options.singleSymbol = scope.singleSymbol;
+
+            scope.this_layer = new ClusterLayer(options);
+            esrimap.addLayer(scope.this_layer, scope.index);
+            if (scope.layerId || scope.id) {
+              scope.this_layer._layer_id = scope.layerId || scope.id;
+              esriRegistry.set(scope.layerId || scope.id, scope.this_layer);
+            }
+            ready.resolve();
+
+            scope.this_layer.on("click", function (r) {
+              if (!scope.$$phase && !scope.$root.$$phase) scope.$apply(function () {
+                if (scope.onClick()) scope.onClick()(r);
+              });
+            });
+
+            scope.this_layer.on("on-add-point-to-cluster", function (e) {
+              if (scope.onAddPointToCluster()) scope.onAddPointToCluster()(e);
             });
           });
-
-          scope.this_layer.on("on-add-point-to-cluster", function (e) {
-            if (scope.onAddPointToCluster()) scope.onAddPointToCluster()(e);
-          });
         });
-
         scope.$on("$destroy", function () {
           scope.isObjectReady.then(function () {
             parents[0].removeLayer(scope.this_layer);
@@ -902,14 +909,22 @@ angular.module("teamdev.esri", [])
         });
       },
       controller: function ($scope) {
-
         this.setRenderer = function (r) {
           if (r)
             $scope.isObjectReady.then(function () {
               $scope.this_layer.setRenderer(r);
             });
         };
-
+        this.setInfoWindow = function (t, c) {
+          $scope.isObjectReady.then(function () {
+            require(["esri/InfoTemplate"], function (InfoTemplate) {
+              var template = new InfoTemplate();
+              template.setTitle(t);
+              template.setContent(c);
+              $scope.this_layer.setInfoTemplate(template);
+            });
+          });
+        };
         this.setSymbol = function (r) {
           $scope.singleSymbol = r;
         };
@@ -1583,7 +1598,7 @@ angular.module("teamdev.esri", [])
 .directive("infoWindow", function ($q, $compile, $timeout) {
   return {
     restrict: "E",
-    require: ["?^featureLayer", "?^graphicsLayer", "?^esriMap"],
+    require: ["?^featureLayer", "?^graphicsLayer", "?^clusterLayer", "?^esriMap"],
     replace: false,
     transclude: true,
     scope: {

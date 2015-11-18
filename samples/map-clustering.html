@@ -23,6 +23,20 @@
 </head>
 <!-- REMEMBER : Its an AngularJS Extension, so you need to declare an ng-app or you need to use our default app "MapApp"-->
 <body ng-app="MapApp">
-  <esri-map map-id="map" base-map="osm" zoom="6" map-center="[12.4036841,42.9141749]"></esri-map>
+  <esri-map map-id="map" base-map="osm" zoom="6" map-center="[12.4036841,42.9141749]">
+
+    <!-- cluster Layer is a custom layer, so you have to write the right path of the custom layer -->
+    <cluster-layer dojo-file="../js/libs/clusterlayer.js"
+                   url="http://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Cities/FeatureServer/0"
+                   use-default-symbol="true"
+                   distance="95"
+                   label-color="#FFF"
+                   resolution=""
+                   show-singles="true"
+                   object-id-field="FID"
+                   layer-id="cl">
+
+    </cluster-layer>
+  </esri-map>
 </body>
 </html>
