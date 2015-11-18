@@ -15,6 +15,7 @@
   <xs:complexType mixed="true" name="mapType" >
     <xs:choice  minOccurs="0" maxOccurs="unbounded">
       <xs:element ref="feature-layer"></xs:element>
+      <xs:element ref="cluster-layer"></xs:element>
       <xs:element ref="graphics-layer" ></xs:element>
       <xs:element ref="label-layer" ></xs:element>
       <xs:element ref="search" ></xs:element>
@@ -68,6 +69,38 @@
 
   </xs:complexType>
 
+  <xs:element name="cluster-layer" >
+    <xs:complexType mixed="true" >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="info-window" ></xs:element>
+        <xs:element ref="unique-value-renderer" ></xs:element>
+        <xs:element ref="class-breaks-renderer" ></xs:element>
+        <xs:element ref="picture-marker-symbol" ></xs:element>
+        <xs:element ref="simple-marker-symbol" ></xs:element>
+      </xs:choice>
+      <xs:attribute name="layer-id" type="xs:string" use="required" />
+
+      <xs:attribute name="url" type="xs:string" use="optional" />
+      <xs:attribute name="dojo-file" type="xs:string" use="required" />
+      <xs:attribute name="out-fields" type="xs:string" use="optional" />
+      <xs:attribute name="object-id-field" type="xs:string" use="optional" />
+      <xs:attribute name="where" type="xs:string" use="optional" />
+      <xs:attribute name="use-default-symbol" type="xs:string" use="optional" />
+      <xs:attribute name="return-limit" type="xs:string" use="optional" />
+      <xs:attribute name="distance" type="xs:string" use="optional" />
+      <xs:attribute name="label-color" type="xs:string" use="optional" />
+      <xs:attribute name="label-offset" type="xs:string" use="optional" />
+      <xs:attribute name="resolution" type="xs:string" use="optional" />
+      <xs:attribute name="show-singles" type="xs:string" use="optional" />
+      <xs:attribute name="zoom-on-click" type="xs:string" use="optional" />
+      <xs:attribute name="max-singles" type="xs:string" use="optional" />
+
+      <xs:attribute name="on-click" type="xs:string" use="optional" />
+      <xs:attribute name="on-add-point-to-cluster" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
+
+
   <xs:element name="feature-layer" >
     <xs:complexType mixed="true" >
       <xs:choice  minOccurs="0" maxOccurs="unbounded">
@@ -79,7 +112,7 @@
         <xs:element ref="info-window" ></xs:element>
         <xs:element ref="unique-value-renderer" ></xs:element>
         <xs:element ref="class-breaks-renderer" ></xs:element>
-        <xs:element ref="heatmap-renderer" ></xs:element>        
+        <xs:element ref="heatmap-renderer" ></xs:element>
         <xs:element ref="picture-marker-symbol" ></xs:element>
         <xs:element ref="simple-fill-symbol" ></xs:element>
         <xs:element ref="simple-text-symbol" ></xs:element>
@@ -187,8 +220,8 @@
     </xs:complexType>
   </xs:element>
 
-  
-  
+
+
   <!--  <xs:element name="button">
     <xs:complexType>
       <xs:attribute name="drawing-tool"></xs:attribute>
@@ -323,7 +356,7 @@
       <xs:attribute name="field" type="xs:string" use="required" />
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="heatmap-renderer" >
     <xs:complexType mixed="true" >
       <xs:attribute name="blur-radius" type="xs:string" use="optional" />

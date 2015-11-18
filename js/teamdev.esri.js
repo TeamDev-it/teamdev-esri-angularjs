@@ -2,6 +2,63 @@
 /* global angular */
 angular.module("MapApp", ["teamdev.esri"]).controller("defaultController", function () { });
 angular.module("teamdev.esri", [])
+
+/// ---------------------------------------------------------------------------------
+/// Helper object to bing dojo-properties to angularjs' scope
+/// ---------------------------------------------------------------------------------
+.factory("propertyConnector", function () {
+  return function (dojoObject, angularObject, propertyname) {
+    var _this = this;
+    if (dojoObject !== undefined && angularObject !== undefined) {
+      _this.changing = false;
+      _this._dojoObject = dojoObject;
+      _this._angularObject = angularObject;
+      _this._watchingHandler = dojoObject.watch(propertyname, function (n, o, v) {
+        if (!_this.changing && (o !== v)) {
+          _this.changing = true;
+          angularObject[name] = v;
+          _this.changing = false;
+        }
+      });
+      angularObject.$watch(propertyname, function (n, o) {
+
+        if (!_this.changing && (o !== n)) {
+          _this.changing = true;
+          _this._dojoObject.set(propertyname, n);
+          _this.changing = false;
+        };
+      });
+    }
+  }
+})
+
+/// Utility to create an options object base on scope definition
+.factory("connector", ["propertyConnector", function (propertyConnector) {
+  return {
+    scopeToOptions: function (scope) {
+      var result = new Object();
+      if (scope !== undefined && scope) {
+        for (var i in scope) {
+          if (i.indexOf('$') < 0 && i.indexOf('on') != 0)
+            if (scope[i] && !angular.isFunction(scope[i]))
+              result[i] = scope[i];
+        }
+      }
+      return result;
+    },
+    connectObjectToScope: function (object, scope) {
+      var result = [];
+      if (scope !== undefined && scope) {
+        for (var i in scope) {
+          if (i.indexOf('$') < 0 && i.indexOf('on') != 0)
+            result.push(new propertyConnector(object, scope, i))
+        }
+      }
+      return result;
+    }
+  };
+}])
+
 .factory("esriRegistry", function ($window) {
   if (typeof $window.teamdev == 'undefined')
     $window.teamdev = { esri_registry: {} };
@@ -781,34 +838,82 @@ angular.module("teamdev.esri", [])
     }
   };
 })
-.directive("clusterLayer", function ($q, esriRegistry, $timeout) {
+.directive("clusterLayer", function ($q, esriRegistry, $timeout, connector) {
   return {
     restrict: "E",
     require: ["^esriMap"],
     scope: {
-      fieldName: "@"
+      layerId: "@",
+      dojoFile: "@",
+      url: "@",
+      outFields: "=",
+      objectIdField: "@",
+      where: "@",
+      useDefaultSymbol: "@",
+      returnLimit: "@",
+      distance: "@",
+      labelColor: "@",
+      labelOffset: "@",
+      resolution: "@",
+      showSingles: "@",
+      zoomOnClick: "@",
+      maxSingles: "@",
+      onAddPointToCluster: "&",
+      onClick: "&"
     },
-    link: function (scope, element, attr, parents) {
-      var ready = $q.defer();
-      scope.isObjectReady = ready.promise;
-      require(["esri/layers/LabelLayer", "esri/symbols/TextSymbol", "esri/renderers/SimpleRenderer"],
-        function (LabelLayer, TextSymbol, SimpleRenderer) {
-          var symbol = new TextSymbol();
-          var renderer = new SimpleRenderer(symbol);
-          scope.this_layer = new LabelLayer();
+    link: {
+      pre: function (scope) {
+        scope.singleSymbol = null;
+      },
+      post: function (scope, element, attr, parents) {
+        var ready = $q.defer();
+        scope.isObjectReady = ready.promise;
 
-          (parents[0] || parents[1]).getLayer(function (l) {
-            scope.this_layer.addFeatureLayer(l, renderer, "{" + scope.fieldName + "}");
-            parents[2].addLayer(scope.this_layer);
-          });
+        var filepath = scope.dojoFile || "./teamdev-esri-angularjs/js/libs/clusterlayer.js";
+
+        require([filepath], function (ClusterLayer) {
+
+          var options = connector.scopeToOptions(scope);
+          if (scope.singleSymbol) options.singleSymbol = scope.singleSymbol;
+
+          scope.this_layer = new ClusterLayer(options);
+          parents[0].addLayer(scope.this_layer, scope.index);
+          if (scope.layerId || scope.id) {
+            scope.this_layer._layer_id = scope.layerId || scope.id;
+            esriRegistry.set(scope.layerId || scope.id, scope.this_layer);
+          }
           ready.resolve();
+
+          scope.this_layer.on("click", function (r) {
+            if (!scope.$$phase && !scope.$root.$$phase) scope.$apply(function () {
+              if (scope.onClick()) scope.onClick()(r);
+            });
+          });
+
+          scope.this_layer.on("on-add-point-to-cluster", function (e) {
+            if (scope.onAddPointToCluster()) scope.onAddPointToCluster()(e);
+          });
         });
 
-      scope.$on("$destroy", function () {
-        scope.isObjectReady.then(function () {
-          parents[2].removeLayer(scope.this_layer);
+        scope.$on("$destroy", function () {
+          scope.isObjectReady.then(function () {
+            parents[0].removeLayer(scope.this_layer);
+          });
         });
-      });
+      },
+      controller: function ($scope) {
+
+        this.setRenderer = function (r) {
+          if (r)
+            $scope.isObjectReady.then(function () {
+              $scope.this_layer.setRenderer(r);
+            });
+        };
+
+        this.setSymbol = function (r) {
+          $scope.singleSymbol = r;
+        };
+      }
     }
   };
 })
@@ -1529,7 +1634,7 @@ angular.module("teamdev.esri", [])
 .directive("uniqueValueRenderer", function ($q) {
   return {
     restrict: "E",
-    require: ["^featureLayer", "^csvLayer"],
+    require: ["?^featureLayer", "?^clusterLayer", "?^csvLayer"],
     link: {
       pre: function (scope, element, attr, layer) {
 
@@ -1542,7 +1647,7 @@ angular.module("teamdev.esri", [])
           for (var v in scope.infos)
             scope.this_renderer.addValue(scope.infos[v].value, scope.infos[v].symbol);
 
-          (layer[0] || layer[1]).setRenderer(scope.this_renderer);
+          (layer[0] || layer[1] || layer[2]).setRenderer(scope.this_renderer);
           ready.resolve();
         });
       }
@@ -1563,7 +1668,7 @@ angular.module("teamdev.esri", [])
 
   return {
     restrict: "E",
-    require: ["^featureLayer", "^csvLayer"],
+    require: ["?^featureLayer", "?^clusterLayer", "?^csvLayer"],
     scope: {
       blurRadius: "=",
       colorStops: "=",
@@ -1584,7 +1689,7 @@ angular.module("teamdev.esri", [])
           maxPixelIntensity: scope.maxPixelIntensity,
           minPixelIntensity: scope.minPixelIntensity
         });
-        (layer[0] || layer[1]).setRenderer(scope.this_renderer);
+        (layer[0] || layer[1] || layer[2]).setRenderer(scope.this_renderer);
         scopeready.resolve();
       });
 
@@ -1601,7 +1706,7 @@ angular.module("teamdev.esri", [])
 .directive("classBreaksRenderer", function ($q) {
   return {
     restrict: "E",
-    require: ["^featureLayer", "^csvLayer"],
+    require: ["?^featureLayer", "?^clusterLayer", "?^csvLayer"],
     scope: {
       attributeField: "@",
       classificationMethod: "@",
@@ -1620,7 +1725,7 @@ angular.module("teamdev.esri", [])
         require(["esri/renderers/ClassBreaksRenderer"], function (ClassBreaksRenderer) {
 
           scope.this_renderer = new ClassBreaksRenderer(scope.default_symbol, scope.attributeField);
-          (layer[0] || layer[1]).setRenderer(scope.this_renderer);
+          (layer[0] || layer[1] || layer[2]).setRenderer(scope.this_renderer);
           scope.ready.resolve();
         })
       }
@@ -1658,7 +1763,7 @@ angular.module("teamdev.esri", [])
     scope: {
       symbolUrl: "@"
     },
-    require: ["?^valueInfo", "^?uniqueValueRenderer", "?^classBreaksRenderer", "?^point", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^valueInfo", "?^uniqueValueRenderer", "?^classBreaksRenderer", "?^point", "?^graphicsLayer", "?^featureLayer", "?^clusterLayer"],
     link: function (scope, element, attr, parents) {
       var ready = $q.defer();
       scope.isObjectReady = ready.promise;
@@ -1668,7 +1773,7 @@ angular.module("teamdev.esri", [])
           pSymbol.setOffset(attr.symbolOffsetX ? attr.symbolOffsetX : 0, attr.symbolOffsetY ? attr.symbolOffsetY : 0)
         scope.this_symbol = pSymbol;
         ready.resolve();
-        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5]);
+        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6]);
         if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
 
         if (scope.symbolUrl) scope.$watch("symbolUrl", function (n, o) {
@@ -1688,7 +1793,7 @@ angular.module("teamdev.esri", [])
 .directive("simpleLineSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?^pictureFillSymbol", "?^simpleFillSymbol", "?^simpleMarkerSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^pictureFillSymbol", "?^simpleFillSymbol", "?^simpleMarkerSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer", "?^clusterLayer"],
     scope: {
       symbolColor: "@"
     },
@@ -1722,7 +1827,7 @@ angular.module("teamdev.esri", [])
           Color.fromString(attr.symbolColor),
           attr.symbolWidth);
         ready.resolve();
-        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9] || parents[10] || parents[11]);
+        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9] || parents[10] || parents[11] || parents[12]);
         if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
 
         if (scope.symbolColor) scope.$watch("symbolColor", function (n, o) {
@@ -1743,7 +1848,7 @@ angular.module("teamdev.esri", [])
 .directive("simpleFillSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer", "?^clusterLayer"],
     link: {
       pre: function (scope, element, attr, parents) {
         var ready = $q.defer();
@@ -1772,7 +1877,7 @@ angular.module("teamdev.esri", [])
             scope.this_symbol.setColor(Color.fromString(attr.symbolColor));
 
           ready.resolve();
-          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8]);
+          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9]);
           if (ctrl) ctrl.setSymbol(scope.this_symbol);
 
           attr.$observe("symbolColor", function (n, o) {
@@ -1797,7 +1902,7 @@ angular.module("teamdev.esri", [])
 .directive("pictureFillSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer", "?^clusterLayer"],
     link: {
       pre: function (scope, element, attr, parents) {
         var ready = $q.defer();
@@ -1810,7 +1915,7 @@ angular.module("teamdev.esri", [])
           if (attr.symbolHeight) scope.this_symbol.setHeight(attr.symbolHeight);
 
           ready.resolve();
-          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8]);
+          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9]);
           if (ctrl) ctrl.setSymbol(scope.this_symbol);
 
           attr.$observe("symbolColor", function (n, o) {
@@ -1835,7 +1940,7 @@ angular.module("teamdev.esri", [])
 .directive("simpleTextSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?^classBreaksRenderer", "?^point", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^classBreaksRenderer", "?^point", "?^graphicsLayer", "?^featureLayer", "?^clusterLayer"],
     scope: {
       textColor: "@",
       text: "@",
@@ -1887,7 +1992,7 @@ angular.module("teamdev.esri", [])
             scope.this_symbol.setColor(Color.fromString(scope.textColor));
 
           ready.resolve();
-          scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3]);
+          scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4]);
           if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
           scope.$watch("text", function (n, o) {
             //             if (scope.text && scope.ctrl && n !== o) {
@@ -1904,7 +2009,7 @@ angular.module("teamdev.esri", [])
 .directive("simpleMarkerSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?^classBreaksRenderer", "?^point", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^classBreaksRenderer", "?^point", "?^graphicsLayer", "?^featureLayer", "?^clusterLayer"],
     scope: {
       json: "=",
       color: "@",
@@ -1948,7 +2053,7 @@ angular.module("teamdev.esri", [])
           if (scope.path != undefined && scope.path) scope.this_symbol.setPath(scope.path);
 
           ready.resolve();
-          scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3]);
+          scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4]);
           if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
         });
       }
