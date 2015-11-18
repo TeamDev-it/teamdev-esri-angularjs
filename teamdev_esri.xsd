@@ -78,6 +78,7 @@
         <xs:element ref="tooltip" ></xs:element>
         <xs:element ref="info-window" ></xs:element>
         <xs:element ref="unique-value-renderer" ></xs:element>
+        <xs:element ref="class-breaks-renderer" ></xs:element>
         <xs:element ref="picture-marker-symbol" ></xs:element>
         <xs:element ref="simple-fill-symbol" ></xs:element>
         <xs:element ref="simple-text-symbol" ></xs:element>
@@ -319,6 +320,40 @@
         <xs:element ref="picture-marker-symbol"></xs:element>
       </xs:choice>
       <xs:attribute name="field" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="class-breaks-renderer" >
+    <xs:complexType mixed="true" >
+      <xs:choice  minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="value-info"></xs:element>
+        <xs:element ref="picture-marker-symbol"></xs:element>
+        <xs:element ref="simple-marker-symbol"></xs:element>
+      </xs:choice>
+      <xs:attribute name="attribute-field" type="xs:string" use="required" />
+      <xs:attribute name="classification-method" use="optional" >
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN">
+            <xs:enumeration value="equal-interval"></xs:enumeration>
+            <xs:enumeration value="geometrical-interval"></xs:enumeration>
+            <xs:enumeration value="natural-breaks"></xs:enumeration>
+            <xs:enumeration value="quantile"></xs:enumeration>
+            <xs:enumeration value="standard-deviation"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="is-max-inclusive" type="xs:string" use="optional" />
+      <xs:attribute name="normalization-field" type="xs:string" use="optional" />
+      <xs:attribute name="normalization-total" type="xs:string" use="optional" />
+      <xs:attribute name="normalization-type" use="optional" >
+        <xs:simpleType>
+          <xs:restriction base="xsd:NMTOKEN">
+            <xs:enumeration value="field"></xs:enumeration>
+            <xs:enumeration value="log"></xs:enumeration>
+            <xs:enumeration value="percent-of-total"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
 

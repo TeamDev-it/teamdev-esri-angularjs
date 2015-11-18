@@ -1,0 +1,28 @@
+﻿<html>
+<head>
+  <title>Base Map Sample</title>
+  <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+  <link href="../css/teamdev.esri.css" rel="stylesheet" />
+  <script src="http://js.arcgis.com/3.14/"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+  <script src="../js/teamdev.esri.js"></script>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .map {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<!-- REMEMBER : Its an AngularJS Extension, so you need to declare an ng-app or you need to use our default app "MapApp"-->
+<body ng-app="MapApp">
+  <esri-map map-id="map" base-map="osm" zoom="6" map-center="[12.4036841,42.9141749]"></esri-map>
+</body>
+</html>
