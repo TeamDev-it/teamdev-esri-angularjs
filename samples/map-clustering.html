@@ -22,7 +22,7 @@
   </style>
 </head>
 <!-- REMEMBER : Its an AngularJS Extension, so you need to declare an ng-app or you need to use our default app "MapApp"-->
-<body ng-app="MapApp">
+<body ng-app="MapApp" ng-controller="myController">
   <esri-map map-id="map" base-map="osm" zoom="6" map-center="[12.4036841,42.9141749]">
 
     <!-- cluster Layer is a custom layer, so you have to write the right path of the custom layer -->
@@ -31,12 +31,19 @@
                    use-default-symbol="true"
                    distance="95"
                    label-color="#FFF"
-                   resolution=""
                    show-singles="true"
+                   on-add-point-to-cluster="pointtocluster"
                    object-id-field="FID"
                    layer-id="cl">
-
     </cluster-layer>
   </esri-map>
+  <script>
+    angular.module("MapApp")
+    .controller("myController", function ($scope) {
+      $scope.pointtocluster = function (e) {
+        console.log(e);
+      };
+    })
+  </script>
 </body>
 </html>
