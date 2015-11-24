@@ -162,6 +162,7 @@ angular.module("teamdev.esri", [])
           var query = new Query();
 
           setParameter(query, options, "spatialRel");
+          setParameter(query, options, "where");
           setParameter(query, options, "geometry");
           setParameter(query, options, "returnGeometry");
           setParameter(query, options, "orderByFields");
