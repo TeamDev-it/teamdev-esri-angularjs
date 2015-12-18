@@ -668,10 +668,10 @@ angular.module("teamdev.esri", [])
           if (scope.onGraphicRemove()) scope.this_layer.on("graphic-remove", function (r) { scope.onGraphicRemove()(r); });
 
           scope.this_layer.on("selection-complete", function () {
-            if (scope.zoomToSelection == true) {
+            if (scope.zoomToSelection == "true") {
               scope.isObjectReady.then(function () {
                 var extent = GraphicsUtils.graphicsExtent(scope.this_layer.getSelectedFeatures());
-                esriMap.getMap(function (m) { m.setExtent(extent); });
+                esriMap.getMap(function (m) { m.setExtent(extent.expand(1.4)); });
               });
             }
           });
