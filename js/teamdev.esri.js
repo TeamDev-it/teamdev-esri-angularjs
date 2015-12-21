@@ -861,6 +861,7 @@ angular.module("teamdev.esri", [])
       resolution: "@",
       onClick: "&",
       onAddPointToCluster: "&",
+      zoomOnClick: "@"
     },
     link: {
       pre: function (scope) {
@@ -887,11 +888,17 @@ angular.module("teamdev.esri", [])
             if (!scope.$$phase && !scope.$root.$$phase) scope.$apply(function () {
               if (scope.onClick()) scope.onClick()(r);
             });
+
+            if (scope.zoomOnClick == "true") {
+              esriMap.getMap(function (map) {
+                map.setScale(map.getScale() + 1);
+              });
+            }
           });
         });
         scope.$on("$destroy", function () {
           scope.isObjectReady.then(function () {
-            parents[0].removeLayer(scope.this_layer);
+            esriMap.removeLayer(scope.this_layer);
           });
         });
       },
