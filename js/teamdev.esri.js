@@ -671,9 +671,10 @@ angular.module("teamdev.esri", [])
             if (scope.zoomToSelection == "true") {
               scope.isObjectReady.then(function () {
                 var extent = GraphicsUtils.graphicsExtent(scope.this_layer.getSelectedFeatures());
-                esriMap.getMap(function (m) { 
-                       m.setScale(14);
-                  m.setExtent(extent.expand(1.4)); });
+                esriMap.getMap(function (m) {
+                  m.setScale(14);
+                  m.setExtent(extent.expand(1.4));
+                });
               });
             }
           });
@@ -904,7 +905,7 @@ angular.module("teamdev.esri", [])
       },
     },
     controller: function ($scope) {
-      
+
       this.clusters = [];
 
       this.addGraphic = function (point) {
@@ -1364,7 +1365,7 @@ angular.module("teamdev.esri", [])
 
   return {
     restrict: "E",
-      require: ["?^cluster", "?^clusterLayer", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^cluster", "?^clusterLayer", "?^graphicsLayer", "?^featureLayer"],
     scope: {
       json: "=",
       extra: "=",
@@ -1446,16 +1447,11 @@ angular.module("teamdev.esri", [])
       if (typeof (scope.geometry) !== "undefined")
         scope.geometry = scope.this_point;
 
-      if (scope.symbol) {
-        scope.graphic = new Graphic(scope.this_point, scope.symbol);
-        layer.add(scope.graphic);
-      }
-      else {
-        scope.graphic = new Graphic(scope.this_point);
-        layer.add(scope.graphic);
-      }
+      if (scope.symbol) scope.graphic = new Graphic(scope.this_point, scope.symbol);
+      else scope.graphic = new Graphic(scope.this_point);
 
       if (scope.extra) scope.graphic.extra = scope.extra;
+      layer.add(scope.graphic);
 
       ready.resolve();
     });
