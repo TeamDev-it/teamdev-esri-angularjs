@@ -874,6 +874,16 @@ angular.module("teamdev.esri", [])
 
         esriMap.getMap(function (map) {
           scope.resolution = map.extent.getWidth() / map.width;
+          map.on("extent-change", function(p){
+            if(scope.$$phase) {
+              scope.resolution = p.extent.getWidth() /map.width;
+              scope.recalcClusters();
+            }
+            else scope.$apply(function(){
+              scope.resolution = p.extent.getWidth() /map.width;
+              scope.recalcClusters();
+            });
+          });
         });
 
         require(["esri/layers/GraphicsLayer"], function (GraphicsLayer) {
@@ -904,57 +914,74 @@ angular.module("teamdev.esri", [])
         });
       },
     },
-    controller: function ($scope) {
-
+    controller: function ($scope, $rootScope) {
       this.clusters = [];
+      var _this = this;
+      _this.points = [];
 
-      this.addGraphic = function (point) {
+      $scope.recalcClusters = function()
+      {
+        _this.clusters = [];
+        $scope.this_layer.clear();
+        for (var key in _this.points) {
+            var point = _this.points[key];
+            _this.add(point);
+        }
+        $rootScope.$broadcast("clusters-refreshed", _this.clusters);
+      };
+
+      _this.addGraphic = function (point) {
         $scope.isObjectReady.then(function () {
           $scope.this_layer.add(point);
         });
       };
-      this.add = function (point) {
+      _this.add = function (point) {
         var found = false;
-        for (var i in this.clusters) {
-          var c = this.clusters[i];
+        var idx = _this.points.indexOf(point);
+        if(idx <0) _this.points.push(point);
+        
+        for (var i in _this.clusters) {
+          var c = _this.clusters[i];
           if (isInCluster(point, c, $scope.resolution, $scope.tolerance)) {
             found = true;
-            if (c.points.length == 1) this.removeGraphic(c.points[0]);
+            if (c.points.length == 1) _this.removeGraphic(c.points[0]);
             c.points.push(point);
-
             if ($scope.onAddPointToCluster()) $scope.onAddPointToCluster()(point, c);
             break;
           }
         }
         if (!found) {
           var newCluster = { points: [point], geometry: angular.copy(point.geometry) };
-          this.clusters.push(newCluster);
-          this.addGraphic(point);
+          _this.clusters.push(newCluster);
+          _this.addGraphic(point);
           if ($scope.onAddPointToCluster()) $scope.onAddPointToCluster()(point, newCluster);
         }
       };
-      this.setSymbol = function (symbol) {
+      _this.setSymbol = function (symbol) {
         $scope.isObjectReady.then(function () {
           require(["esri/renderers/SimpleRenderer"], function (SimpleRenderer) {
             $scope.this_layer.setRenderer(new SimpleRenderer(symbol));
           });
         });
       };
-      this.removeGraphic = function (g) {
+      _this.removeGraphic = function (g) {
         $scope.isObjectReady.then(function () {
           $scope.this_layer.remove(g);
         });
       };
-      this.remove = function (point) {
-        for (var i in scope.$clusters) {
-          var c = scope.$clusters[i];
+      _this.remove = function (point) {
+        var pidx = _this.points.indexOf(point);
+        if(pidx >=0) _this.points.splice(pidx,1);
+        
+        for (var i in _this.clusters) {
+          var c = _this.clusters[i];
           var idx = c.points.indexOf(point);
           if (idx >= 0) c.points.splice(idx, 1);
-          if (c.points.length == 0) this.removeGraphic(point);
-          if (c.points.length == 1) { this.addGraphic(c.points[0]); }
+          if (c.points.length == 0) _this.removeGraphic(point);
+          if (c.points.length == 1) { _this.addGraphic(c.points[0]); }
         }
       };
-      this.setInfoWindow = function (t, c) {
+      _this.setInfoWindow = function (t, c) {
         $scope.isObjectReady.then(function () {
           require(["esri/InfoTemplate"], function (InfoTemplate) {
             var template = new InfoTemplate();
@@ -964,7 +991,7 @@ angular.module("teamdev.esri", [])
           });
         });
       };
-      this.getLayer = function (action) {
+      _this.getLayer = function (action) {
         if (action)
           $scope.isObjectReady.then(function () { action($scope.this_layer) });
       };
@@ -982,6 +1009,10 @@ angular.module("teamdev.esri", [])
       }
     },
     controller: function ($scope) {
+      $scope.$on("clusters-refreshed", function(c,data){
+        $scope.$clusters = data;
+      });
+      
       this.add = function (point) { $scope.clusterLayer.addGraphic(point); };
       this.setSymbol = function (symbol) { $scope.clusterLayer.setSymbol(symbol); };
       this.remove = function (g) { $scope.clusterLayer.removeGraphic(g); };
