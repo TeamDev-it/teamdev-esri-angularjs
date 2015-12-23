@@ -1010,7 +1010,9 @@ angular.module("teamdev.esri", [])
     },
     controller: function ($scope) {
       $scope.$on("clusters-refreshed", function(c,data){
-        $scope.$clusters = data;
+          var arr = [];
+          for (var key in data) if(data[key].points.length >1) arr.push(data[key]);
+        $scope.$clusters = arr;
       });
       
       this.add = function (point) { $scope.clusterLayer.addGraphic(point); };
