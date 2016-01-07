@@ -875,7 +875,7 @@ angular.module("teamdev.esri", [])
         esriMap.getMap(function (map) {
           scope.resolution = map.extent.getWidth() / map.width;
           map.on("extent-change", function(p){
-            if(scope.$$phase) {
+            if (scope.$$phase || scope.$root.$$phase) {
               scope.resolution = p.extent.getWidth() /map.width;
               scope.recalcClusters();
             }
@@ -1003,16 +1003,17 @@ angular.module("teamdev.esri", [])
     restrict: "E",
     require: "^clusterLayer",
     link: {
-      pre: function (scope, element, attr, clusterLayer) {
+      post: function (scope, element, attr, clusterLayer) {
         scope.clusterLayer = clusterLayer;
         scope.$clusters = clusterLayer.clusters;
       }
     },
+    scope: {
+      clustersArray : "="
+    },
     controller: function ($scope) {
       $scope.$on("clusters-refreshed", function(c,data){
-          var arr = [];
-          for (var key in data) if(data[key].points.length >1) arr.push(data[key]);
-        $scope.$clusters = arr;
+        $scope.clustersArray = $scope.clusterLayer.clusters;
       });
       
       this.add = function (point) { $scope.clusterLayer.addGraphic(point); };
