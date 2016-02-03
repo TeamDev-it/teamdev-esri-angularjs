@@ -874,7 +874,7 @@ angular.module("teamdev.esri", [])
 
         esriMap.getMap(function (map) {
           scope.resolution = map.extent.getWidth() / map.width;
-          map.on("extent-change", function(p){
+          map.on("zoom-end", function(p){
             if (scope.$$phase || scope.$root.$$phase) {
               scope.resolution = p.extent.getWidth() /map.width;
               scope.recalcClusters();
