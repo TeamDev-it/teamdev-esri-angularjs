@@ -1191,6 +1191,7 @@ angular.module("teamdev.esri", [])
   return {
     restrict: "A",
     require: ["^draw"],
+    scope: {},
     link: function (scope, element, attr, parents) {
       if (attr.drawingTool && parent) {
         element.on("click", function () {
@@ -1651,6 +1652,7 @@ angular.module("teamdev.esri", [])
     restrict: "E",
     require: ["^featureLayer"],
     replace: false,
+    scope: {},
     link: function (scope, element, attr, layer, transclude) {
       element.css("display", "none");
       element.css("position", "fixed");
@@ -1737,6 +1739,7 @@ angular.module("teamdev.esri", [])
   return {
     restrict: "E",
     require: ["?^featureLayer", "?^csvLayer"],
+    scope: {},
     link: {
       pre: function (scope, element, attr, layer) {
 
@@ -1844,6 +1847,7 @@ angular.module("teamdev.esri", [])
   return {
     restrict: "E",
     require: ["^uniqueValueRenderer"],
+    scope: {},
     controller: function ($scope) {
       $scope.this_symbol = null;
       this.setSymbol = function (s) {
@@ -1951,6 +1955,7 @@ angular.module("teamdev.esri", [])
   return {
     restrict: "EA",
     require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
+    scope: {},
     link: {
       pre: function (scope, element, attr, parents) {
         var ready = $q.defer();
@@ -2005,6 +2010,7 @@ angular.module("teamdev.esri", [])
   return {
     restrict: "EA",
     require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
+    scope: {},
     link: {
       pre: function (scope, element, attr, parents) {
         var ready = $q.defer();
