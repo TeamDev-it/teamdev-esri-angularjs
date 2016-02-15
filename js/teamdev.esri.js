@@ -1847,16 +1847,19 @@ angular.module("teamdev.esri", [])
   return {
     restrict: "E",
     require: ["^uniqueValueRenderer"],
-    scope: {},
+    scope: {
+        value: "@"
+    },
     controller: function ($scope) {
       $scope.this_symbol = null;
       this.setSymbol = function (s) {
         $scope.this_symbol = s;
+        $scope.my_renderer.setInfo($scope.value, $scope.this_symbol);
       };
     },
-    link: function (scope, element, attr, renderer) {
-      renderer[0].setInfo(attr.value, scope.this_symbol);
-    }
+    link:{ pre: function (scope, element, attr, renderer) {
+        scope.my_renderer = renderer[0];
+    }}
   };
 })
 
