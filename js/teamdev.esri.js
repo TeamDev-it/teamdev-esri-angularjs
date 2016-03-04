@@ -1708,6 +1708,10 @@ angular.module("teamdev.esri", [])
       var ie = navigator.userAgent.match(/MSIE/);
       var ie11 = navigator.userAgent.match(/Trident\/7\./);
 
+      scope.$on("$destroy", function () {
+        esriMap.getMap(function(m) { m.infoWindow.hide(); });
+      });
+      
       if (esriMap)
         esriMap.getMap(function (map) {
           require(["dojo/_base/connect"], function (connect) {
@@ -1847,19 +1851,16 @@ angular.module("teamdev.esri", [])
   return {
     restrict: "E",
     require: ["^uniqueValueRenderer"],
-    scope: {
-        value: "@"
-    },
+    scope: {},
     controller: function ($scope) {
       $scope.this_symbol = null;
       this.setSymbol = function (s) {
         $scope.this_symbol = s;
-        $scope.my_renderer.setInfo($scope.value, $scope.this_symbol);
       };
     },
-    link:{ pre: function (scope, element, attr, renderer) {
-        scope.my_renderer = renderer[0];
-    }}
+    link: function (scope, element, attr, renderer) {
+      renderer[0].setInfo(attr.value, scope.this_symbol);
+    }
   };
 })
 
@@ -1872,7 +1873,7 @@ angular.module("teamdev.esri", [])
     scope: {
       symbolUrl: "@"
     },
-    require: ["?^valueInfo", "?^uniqueValueRenderer", "?^classBreaksRenderer", "?^point", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^valueInfo", "?^uniqueValueRenderer", "?^classBreaksRenderer", "?^point", "?^selectFeatures", "?^graphicsLayer", "?^featureLayer"],
     link: function (scope, element, attr, parents) {
       var ready = $q.defer();
       scope.isObjectReady = ready.promise;
@@ -1882,7 +1883,7 @@ angular.module("teamdev.esri", [])
           pSymbol.setOffset(attr.symbolOffsetX ? attr.symbolOffsetX : 0, attr.symbolOffsetY ? attr.symbolOffsetY : 0)
         scope.this_symbol = pSymbol;
         ready.resolve();
-        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5]);
+        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6]);
         if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
 
         if (scope.symbolUrl) scope.$watch("symbolUrl", function (n, o) {
@@ -1902,7 +1903,7 @@ angular.module("teamdev.esri", [])
 .directive("simpleLineSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?^pictureFillSymbol", "?^simpleFillSymbol", "?^simpleMarkerSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^pictureFillSymbol", "?^simpleFillSymbol", "?^simpleMarkerSymbol", "?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^selectFeatures", "?^graphicsLayer", "?^featureLayer"],
     scope: {
       symbolColor: "@"
     },
@@ -1936,7 +1937,7 @@ angular.module("teamdev.esri", [])
           Color.fromString(attr.symbolColor),
           attr.symbolWidth);
         ready.resolve();
-        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9] || parents[10] || parents[11]);
+        scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9] || parents[10] || parents[11] || parents[12]);
         if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
 
         if (scope.symbolColor) scope.$watch("symbolColor", function (n, o) {
@@ -1957,7 +1958,7 @@ angular.module("teamdev.esri", [])
 .directive("simpleFillSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^selectFeatures", "?^graphicsLayer", "?^featureLayer"],
     scope: {},
     link: {
       pre: function (scope, element, attr, parents) {
@@ -1987,7 +1988,7 @@ angular.module("teamdev.esri", [])
             scope.this_symbol.setColor(Color.fromString(attr.symbolColor));
 
           ready.resolve();
-          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8]);
+          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9]);
           if (ctrl) ctrl.setSymbol(scope.this_symbol);
 
           attr.$observe("symbolColor", function (n, o) {
@@ -2012,7 +2013,7 @@ angular.module("teamdev.esri", [])
 .directive("pictureFillSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?circle", "?^circle", "?point", "?^point", "?polyLine", "?^polyLine", "?^polygon", "?^selectFeatures", "?^graphicsLayer", "?^featureLayer"],
     scope: {},
     link: {
       pre: function (scope, element, attr, parents) {
@@ -2026,7 +2027,7 @@ angular.module("teamdev.esri", [])
           if (attr.symbolHeight) scope.this_symbol.setHeight(attr.symbolHeight);
 
           ready.resolve();
-          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8]);
+          var ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5] || parents[6] || parents[7] || parents[8] || parents[9]);
           if (ctrl) ctrl.setSymbol(scope.this_symbol);
 
           attr.$observe("symbolColor", function (n, o) {
@@ -2051,7 +2052,7 @@ angular.module("teamdev.esri", [])
 .directive("simpleTextSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?^classBreaksRenderer", "?^point", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^classBreaksRenderer", "?^point", "?^selectFeatures", "?^graphicsLayer", "?^featureLayer"],
     scope: {
       textColor: "@",
       text: "@",
@@ -2103,7 +2104,7 @@ angular.module("teamdev.esri", [])
             scope.this_symbol.setColor(Color.fromString(scope.textColor));
 
           ready.resolve();
-          scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3]);
+          scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4]);
           if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
           scope.$watch("text", function (n, o) {
             //             if (scope.text && scope.ctrl && n !== o) {
@@ -2120,7 +2121,7 @@ angular.module("teamdev.esri", [])
 .directive("simpleMarkerSymbol", function ($q) {
   return {
     restrict: "EA",
-    require: ["?^valueInfo", "?^classBreaksRenderer", "?^point", "?^graphicsLayer", "?^featureLayer"],
+    require: ["?^valueInfo", "?^classBreaksRenderer", "?^point", "?^selectFeatures", "?^graphicsLayer", "?^featureLayer"],
     scope: {
       json: "=",
       color: "@",
@@ -2149,7 +2150,10 @@ angular.module("teamdev.esri", [])
           if (scope.json)
             scope.this_symbol = new SimpleMarkerSymbol(scope.json);
           else
+          {
             scope.this_symbol = new SimpleMarkerSymbol();
+            scope.this_symbol.setStyle(style);
+          }
 
           if (scope.color != undefined) {
             if (scope.color) scope.this_symbol.setColor(Color.fromString(scope.color));
@@ -2164,7 +2168,7 @@ angular.module("teamdev.esri", [])
           if (scope.path != undefined && scope.path) scope.this_symbol.setPath(scope.path);
 
           ready.resolve();
-          scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4]);
+          scope.ctrl = (parents[0] || parents[1] || parents[2] || parents[3] || parents[4] || parents[5]);
           if (scope.ctrl) scope.ctrl.setSymbol(scope.this_symbol);
         });
       }
@@ -2179,4 +2183,98 @@ angular.module("teamdev.esri", [])
       };
     }
   };
-});
+})
+
+.directive("selectFeatures", function(esriQuery, $q)
+{
+  return {
+    restrict: "EA",
+    require: ["^?featureLayer", "^?graphicsLayer"],
+    scope: {
+      where: "@",
+      outFields: "@",
+      url: "@",
+      options: "@"
+    },
+    link: {
+      pre: function (scope, element, attr, parents) {
+        var ready = $q.defer();
+        scope.isObjectReady = ready.promise;
+        
+        scope.ctrl = (parents[0] || parents[1]);
+        
+        var featureURL = scope.url 
+        
+        if (!featureURL)
+        {
+          scope.ctrl.getLayer(function(l){
+            featureURL = l.url;
+            execquery(featureURL, scope.outFields, scope.where, scope.options)
+          });
+        }
+        else
+        {
+          execquery(featureURL, scope.outFields, scope.where, scope.options)
+        }
+        
+        scope.graphics = [];
+        
+        scope.$on("$destroy", function ()
+        {
+          scope.isObjectReady.then(function ()
+          {
+            for (var i = 0; i < scope.graphics.length; i++)
+            {
+              var g = scope.graphics[i];
+              scope.ctrl.remove(scope.graphic);
+            }
+          });
+          
+        });
+        
+        function execquery(featureURL, outFields, where, options)
+        {
+          if (typeof options != "object")
+            options = {returnGeometry: true};
+          else
+            options.returnGeometry = true;
+          
+          esriQuery.queryTask(featureURL, outFields, where, options)
+          .then(function(results)
+          {
+            require(["esri/graphic"], function(Graphic)
+            { 
+              for (var i = 0; i < results.features.length; i++)
+              {
+                var f = results.features[i];
+                var g = new Graphic({geometry: f.geometry, attributes: f.attributes});
+                scope.graphics.push(g);
+                scope.ctrl.add(g);
+              }
+              ready.resolve();
+            });
+          });
+        }
+
+      }
+    },
+    controller: function ($scope) {
+      this.setSymbol = function (symbol) {
+        this.setSymbol = function (val) {
+          $scope.symbol = val;
+          if (typeof ($scope.isObjectReady) !== "undefined" && $scope.isObjectReady) {
+            $scope.isObjectReady.then(function () {
+              for (var i = 0; i < $scope.graphics.length; i++)
+              {
+                var g = $scope.graphics[i];
+                g.setSymbol(val);
+                g.draw();
+              }
+            });
+          }
+        };
+      };
+    }
+  };
+})
+;
