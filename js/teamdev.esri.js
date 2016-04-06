@@ -653,11 +653,17 @@ angular.module("teamdev.esri", [])
             }
 
             esriMap.getMap(function (rr) {
-              rr.infoWindow.hide();
-              rr.infoWindow.clearFeatures();
+              if (scope.showInfoWindowOnClick != true)
+              {
+                rr.infoWindow.hide();
+                rr.infoWindow.clearFeatures();
+              }
               rr.infoWindow.setFeatures([r.graphic]);
-              if (scope.showInfoWindowOnClick == true)
-                $timeout(function () { rr.infoWindow.show(r.mapPoint); });
+             if (scope.showInfoWindowOnClick == true)
+                $timeout(function () { 
+                   rr.infoWindow.setFeatures([r.graphic]);
+                   rr.infoWindow.show(r.mapPoint); 
+                });
             });
           });
 
@@ -1652,7 +1658,6 @@ angular.module("teamdev.esri", [])
     restrict: "E",
     require: ["^featureLayer"],
     replace: false,
-    scope: {},
     link: function (scope, element, attr, layer, transclude) {
       element.css("display", "none");
       element.css("position", "fixed");
@@ -1672,10 +1677,12 @@ angular.module("teamdev.esri", [])
 
             });
             connect.connect(l, "onMouseMove", function (m) {
-              scope.$apply(function () { scope.$g = m.graphic; });
+                try{
+              scope.$apply(function () { try{scope.$g = m.graphic;}catch(_e){} });
               element.css("display", "block");
               element.css("top", m.clientY + 2);
               element.css("left", m.clientX + 2);
+                }catch(e){}
             });
           });
         });
@@ -1851,16 +1858,19 @@ angular.module("teamdev.esri", [])
   return {
     restrict: "E",
     require: ["^uniqueValueRenderer"],
-    scope: {},
+    scope: {
+        value: "@"
+    },
     controller: function ($scope) {
       $scope.this_symbol = null;
       this.setSymbol = function (s) {
         $scope.this_symbol = s;
+        $scope.my_renderer.setInfo($scope.value, $scope.this_symbol);
       };
     },
-    link: function (scope, element, attr, renderer) {
-      renderer[0].setInfo(attr.value, scope.this_symbol);
-    }
+    link:{ pre: function (scope, element, attr, renderer) {
+        scope.my_renderer = renderer[0];
+    }}
   };
 })
 
